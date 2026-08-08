@@ -22,7 +22,7 @@ git clone https://github.com/arcorreiaa/esudaPosEs.git
 
 ## Contribuindo
 
-Por favor leia `CONTRIBUTING.md` para detalhes sobre os processos de submissão de suas contribuições via `pull request`.
+Por favor leia [CONTRIBUTING.md](https://github.com/arcorreiaa/esudaPosEs/blob/main/CONTRIBUTING.md) para detalhes sobre os processos de submissão de suas contribuições via `pull request`.
 
 ## Autores
 
@@ -33,4 +33,4 @@ Por favor leia `CONTRIBUTING.md` para detalhes sobre os processos de submissão 
 
 ## Licença
 
-Este projeto está licenciado sob MIT, veja o arquivo LICENSE para mais detalhes.
+Este projeto está licenciado sob [MIT](https://github.com/arcorreiaa/esudaPosEs/blob/main/LICENSE), veja o arquivo [LICENSE](https://github.com/arcorreiaa/esudaPosEs/blob/main/LICENSE) para mais detalhes.

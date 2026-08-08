@@ -1,0 +1,18 @@
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+
+  database:
+    image: mysql:8.0.42
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laboratorio
+      MYSQL_USER: laboratorio
+      MYSQL_PASSWORD: laboratorio
+
+  api:
+    image: nginx:latest
+    ports:
+      - "8081:80"

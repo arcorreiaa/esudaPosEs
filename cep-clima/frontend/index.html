@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CEP + Clima | Faculdade ESUDA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Raleway:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+  /* Cores oficiais do site esuda.edu.br (tema OnePress customizado) */
+  :root {
+    --esuda-orange: #f19800;
+    --esuda-orange-dark: #d98600;
+    --esuda-green: #61b376;
+    --esuda-green-dark: #4f9d62;
+    --esuda-dark: #3f3f3f;
+    --text: #333333;
+    --text-light: #777777;
+    --border: #e9e9e9;
+    --white: #ffffff;
+    --bg: #f8f9f9;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .site-header {
+    background: var(--white);
+    border-bottom: 3px solid var(--esuda-orange);
+    padding: 16px 24px;
+    text-align: center;
+  }
+
+  .site-header img {
+    height: 56px;
+    width: auto;
+    max-width: 220px;
+  }
+
+  .page-hero {
+    background: var(--esuda-green);
+    color: var(--white);
+    text-align: center;
+    padding: 36px 24px;
+  }
+
+  .page-hero h1 {
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .page-hero p {
+    font-size: 0.95rem;
+    opacity: 0.95;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .content {
+    flex: 1;
+    max-width: 520px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 20px 48px;
+  }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .card-desc {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .input-group {
+    display: flex;
+    gap: 0;
+    margin-bottom: 10px;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    padding: 12px 14px;
+    font-size: 1rem;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-right: none;
+    outline: none;
+    min-width: 0;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--esuda-orange);
+  }
+
+  .btn {
+    padding: 12px 22px;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--white);
+    background: var(--esuda-orange);
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn:hover:not(:disabled) { background: var(--esuda-orange-dark); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .hint {
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+
+  .hint a, .hint strong { color: var(--esuda-orange); }
+
+  .alert {
+    margin-top: 16px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    display: none;
+  }
+
+  .alert.show { display: block; }
+  .alert-error {
+    background: #fff5f5;
+    border: 1px solid #fcc;
+    color: #c00;
+  }
+  .alert-loading {
+    background: #fff8ee;
+    border: 1px solid #fde0b0;
+    color: var(--esuda-orange-dark);
+  }
+
+  .result-card {
+    display: none;
+    border-top: 4px solid var(--esuda-green);
+  }
+
+  .result-card.show { display: block; }
+
+  .weather-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .weather-temp {
+    font-family: 'Raleway', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--esuda-orange);
+    line-height: 1;
+  }
+
+  .weather-temp span {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .weather-place {
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .weather-sub {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+
+  .data-list {
+    list-style: none;
+  }
+
+  .data-list li {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+
+  .data-list li:last-child { border-bottom: none; }
+
+  .data-list .lbl {
+    width: 110px;
+    flex-shrink: 0;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+
+  .data-list .val {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .site-footer {
+    background: var(--esuda-green);
+    color: var(--white);
+    text-align: center;
+    padding: 20px 24px;
+    font-size: 0.8rem;
+  }
+
+  .site-footer a {
+    color: var(--white);
+    text-decoration: underline;
+  }
+
+  .footer-dark {
+    background: var(--esuda-dark);
+    color: #ccc;
+    text-align: center;
+    padding: 14px 24px;
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    .input-group { flex-direction: column; }
+    input[type="text"] { border-right: 1px solid var(--border); }
+    .weather-temp { font-size: 2.4rem; }
+  }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="https://esuda.edu.br" target="_blank" rel="noopener">
+      <img src="esuda-logo.png" alt="Faculdade ESUDA">
+    </a>
+  </header>
+
+  <section class="page-hero">
+    <h1>Consulta de clima por CEP</h1>
+    <p>Informe um CEP de Recife ou de qualquer cidade e veja o endereço e a temperatura máxima de hoje.</p>
+  </section>
+
+  <main class="content">
+    <section class="card">
+      <h2 class="card-title">Buscar CEP</h2>
+      <p class="card-desc">Digite o CEP com ou sem hífen.</p>
+
+      <form id="form">
+        <label for="cep">CEP</label>
+        <div class="input-group">
+          <input type="text" id="cep" placeholder="50050-480" maxlength="9" autocomplete="postal-code" required>
+          <button type="submit" class="btn" id="btn">Buscar</button>
+        </div>
+        <p class="hint">Exemplo: <strong>50050-480</strong> — Santo Amaro, Recife</p>
+      </form>
+
+      <div id="message" class="alert"></div>
+    </section>
+
+    <section id="results" class="card result-card">
+      <div class="weather-row">
+        <div class="weather-temp" id="temp">--<span>°C</span></div>
+        <div>
+          <div class="weather-place" id="city"></div>
+          <div class="weather-sub" id="cepResult"></div>
+        </div>
+      </div>
+
+      <ul class="data-list">
+        <li><span class="lbl">Endereço</span><span class="val" id="endereco"></span></li>
+        <li><span class="lbl">Bairro</span><span class="val" id="bairro"></span></li>
+        <li><span class="lbl">Estado</span><span class="val" id="uf"></span></li>
+        <li><span class="lbl">Latitude</span><span class="val" id="lat"></span></li>
+        <li><span class="lbl">Longitude</span><span class="val" id="lng"></span></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+  Recife — Pernambuco · <a href="https://esuda.edu.br" target="_blank" rel="noopener">esuda.edu.br</a>
+  </footer>
+  <div class="footer-dark">Projeto esudaPosEs · ViaCEP + Open-Meteo</div>
+
+  <script>
+    const form = document.getElementById('form');
+    const cepInput = document.getElementById('cep');
+    const btn = document.getElementById('btn');
+    const message = document.getElementById('message');
+    const results = document.getElementById('results');
+
+    cepInput.addEventListener('input', (e) => {
+      let v = e.target.value.replace(/\D/g, '');
+      if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5, 8);
+      e.target.value = v;
+    });
+
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = 'alert show alert-' + type;
+    }
+
+    function hideMessage() {
+      message.className = 'alert';
+      message.textContent = '';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const cep = cepInput.value.replace(/\D/g, '');
+
+      if (cep.length !== 8) {
+        showMessage('CEP inválido. Digite 8 números.', 'error');
+        results.classList.remove('show');
+        return;
+      }
+
+      hideMessage();
+      results.classList.remove('show');
+      showMessage('Consultando...', 'loading');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/clima/' + cep);
+        const data = await res.json();
+
+        if (!res.ok) {
+          showMessage(data.message || data.error || 'CEP não encontrado.', 'error');
+          return;
+        }
+
+        hideMessage();
+
+        const temp = data.clima.temperatura_maxima_celsius;
+        document.getElementById('temp').innerHTML = temp.toFixed(1) + '<span>°C</span>';
+        document.getElementById('city').textContent = data.endereco.localidade + ', ' + data.endereco.uf;
+        document.getElementById('cepResult').textContent = 'CEP ' + data.cep + ' · temperatura máxima hoje';
+        document.getElementById('endereco').textContent = data.endereco.logradouro;
+        document.getElementById('bairro').textContent = data.endereco.bairro;
+        document.getElementById('uf').textContent = data.endereco.uf;
+        document.getElementById('lat').textContent = data.coordenadas.latitude.toFixed(4);
+        document.getElementById('lng').textContent = data.coordenadas.longitude.toFixed(4);
+
+        results.classList.add('show');
+      } catch {
+        showMessage('Erro de conexão. Verifique se o projeto está rodando.', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="140" viewBox="0 0 640 140">
+  <rect width="640" height="140" fill="#61b376"/>
+  <rect width="640" height="6" fill="#f19800"/>
+  <text x="32" y="58" font-family="Arial,Helvetica,sans-serif" font-size="32" font-weight="700" fill="#ffffff">CEP + Clima</text>
+  <text x="32" y="88" font-family="Arial,Helvetica,sans-serif" font-size="15" fill="#ffffff" opacity="0.92">Faculdade ESUDA · Recife, PE</text>
+  <text x="32" y="115" font-family="Arial,Helvetica,sans-serif" font-size="12" fill="#ffffff" opacity="0.75">CEP ’ endereço ’ temperatura máxima</text>
+  <circle cx="560" cy="70" r="42" fill="#f19800" opacity="0.9"/>
+  <text x="560" y="78" text-anchor="middle" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="#fff">°C</text>
+</svg>

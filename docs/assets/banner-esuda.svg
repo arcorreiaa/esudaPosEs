@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="140" viewBox="0 0 640 140">
+  <rect width="640" height="140" fill="#61b376"/>
+  <rect width="640" height="6" fill="#f19800"/>
+  <text x="32" y="58" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="700" fill="#ffffff">esudaPosEs</text>
+  <text x="32" y="88" font-family="Arial,Helvetica,sans-serif" font-size="15" fill="#ffffff" opacity="0.92">Entregas &amp; Laboratùrios ù Faculdade ESUDA</text>
+  <text x="32" y="115" font-family="Arial,Helvetica,sans-serif" font-size="12" fill="#ffffff" opacity="0.75">Recife, Pernambuco</text>
+  <rect x="520" y="40" width="100" height="60" rx="8" fill="#61b376"/>
+  <text x="570" y="78" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#fff">ESUDA</text>
+</svg>

@@ -1,29 +1,27 @@
 # Frontend — Interface web
 
-Camada de apresentação. Página com campo de CEP, máscara automática e exibição dos resultados.
-
-## Rodar com Docker (recomendado)
-
-Na raiz de `cep-clima`:
-
-```bash
-docker compose up --build
-```
-
-Acesse **http://localhost:8080**
+Camada de apresentação: HTML, CSS e JavaScript.
 
 ## Arquivos
 
 | Arquivo | Função |
 |---------|--------|
-| `index.html` | Página principal (HTML + CSS + JS) |
-| `nginx.conf` | Servidor estático + proxy `/clima/` → backend |
-| `Dockerfile` | Imagem nginx:alpine |
+| `index.html` | Página com campo de CEP e resultado |
+| `esuda-logo.png` | Logo ESUDA |
 
-## Como a página chama a API
+## Como funciona
 
-O JavaScript usa `fetch('/clima/' + cep)`. O Nginx encaminha essa rota ao container `backend`.
+O Spring Boot serve esses arquivos em `http://localhost:8080` e a página chama a API com `fetch('/clima/' + cep)` no mesmo servidor.
 
-## Personalizar
+## Editar a interface
 
-Edite `index.html` para alterar layout, cores ou textos. Não é necessário rebuild do backend.
+Altere os arquivos nesta pasta. No Docker, o build copia automaticamente para o backend.
+
+Rodando só o backend localmente, copie antes de iniciar:
+
+```bash
+cp index.html esuda-logo.png ../backend/src/main/resources/static/
+cd ../backend && ./mvnw spring-boot:run
+```
+
+Ou use `docker compose up --build` na raiz de `cep-clima`.

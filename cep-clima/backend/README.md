@@ -8,6 +8,8 @@ Camada de aplicação. Recebe o CEP, orquestra as APIs externas e devolve JSON.
 GET /clima/{cep}
 ```
 
+Serve a API e a página web (`src/main/resources/static/`).
+
 ## Rodar localmente
 
 ```bash
@@ -15,12 +17,14 @@ cd cep-clima/backend
 ./mvnw spring-boot:run
 ```
 
-Porta padrão: **8080**
+Página: **http://localhost:8080** · API: **http://localhost:8080/clima/50050480**
 
-## Testar
+## Docker
+
+Na raiz de `cep-clima`:
 
 ```bash
-curl http://localhost:8080/clima/50050480
+docker compose up --build
 ```
 
 ## Estrutura do código
@@ -40,11 +44,3 @@ backend/src/main/java/br/edu/esuda/cepclima/
 
 - `spring-boot-starter-webmvc`
 - Java 17
-
-## Docker
-
-Build isolado (usado pelo `docker-compose` na raiz):
-
-```bash
-docker build -t cep-clima-backend .
-```

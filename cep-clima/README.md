@@ -14,10 +14,10 @@ Desenvolvido no contexto do curso na **Faculdade ESUDA** — Recife, PE.
 ## Funcionalidades
 
 - Busca de endereço por CEP via [ViaCEP](https://viacep.com.br)
-- Conversão da cidade em coordenadas via [Open-Meteo Geocoding](https://open-meteo.com/en/docs/geocoding-api)
+- Geolocalização do CEP (coordenadas para mapa) via [OpenStreetMap Nominatim](https://nominatim.openstreetmap.org/)
 - Consulta de temperatura máxima via [Open-Meteo Forecast](https://open-meteo.com/en/docs)
-- Página web para consulta interativa
-- Endpoint REST em JSON
+- Página web para consulta interativa com mapa
+- Endpoints REST em JSON
 
 ---
 
@@ -67,9 +67,10 @@ Spring Boot (página + API)
    │
    ├── GET /              → frontend (index.html)
    ├── GET /clima/{cep}   → API REST
+  ├── GET /mapa/{cep}    → API REST (coordenadas)
    │
    ├── ViaCEP
-   ├── Open-Meteo Geocoding
+  ├── OpenStreetMap Nominatim
    └── Open-Meteo Forecast
 ```
 
@@ -95,9 +96,14 @@ cep-clima/
 
 ## API REST
 
-**Endpoint:** `GET /clima/{cep}`
+**Endpoints:**
+
+- `GET /clima/{cep}`
+- `GET /mapa/{cep}`
 
 **Exemplo:** `http://localhost:8080/clima/50050480`
+
+**Exemplo (mapa):** `http://localhost:8080/mapa/50050480`
 
 O CEP pode ser enviado com ou sem hífen (8 dígitos).
 

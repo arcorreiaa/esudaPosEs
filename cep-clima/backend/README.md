@@ -6,6 +6,7 @@ Camada de aplicação. Recebe o CEP, orquestra as APIs externas e devolve JSON.
 
 ```
 GET /clima/{cep}
+GET /mapa/{cep}
 ```
 
 Serve a API e a página web (`src/main/resources/static/`).
@@ -18,6 +19,8 @@ cd cep-clima/backend
 ```
 
 Página: **http://localhost:8080** · API: **http://localhost:8080/clima/50050480**
+
+Exemplo (mapa): **http://localhost:8080/mapa/50050480**
 
 ## Docker
 
@@ -35,9 +38,11 @@ backend/src/main/java/br/edu/esuda/cepclima/
 ├── config/WebConfig.java         # CORS (dev)
 ├── controller/
 │   ├── ClimaController.java      # GET /clima/{cep}
+│   ├── MapaController.java       # GET /mapa/{cep}
 │   └── ApiExceptionHandler.java  # erros padronizados
 └── service/
-    └── ClimaService.java         # ViaCEP + Open-Meteo
+    ├── ClimaService.java         # Open-Meteo Forecast (clima)
+    └── MapaService.java          # ViaCEP + Nominatim (coordenadas)
 ```
 
 ## Dependências principais

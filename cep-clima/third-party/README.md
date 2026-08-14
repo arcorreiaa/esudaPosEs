@@ -15,16 +15,16 @@ Camada de integração com serviços de terceiros. O backend consome estas APIs;
 | **Autenticação** | Não requer |
 | **Campos usados** | `cep`, `logradouro`, `bairro`, `localidade`, `uf` |
 
-### 2. Open-Meteo Geocoding
+### 2. OpenStreetMap Nominatim
 
 | | |
 |---|---|
-| **Função** | Converte nome da cidade em latitude/longitude |
-| **URL** | `https://geocoding-api.open-meteo.com/v1/search` |
-| **Parâmetros** | `name`, `count=1`, `language=pt`, `countryCode=BR` |
-| **Documentação** | [open-meteo.com/en/docs/geocoding-api](https://open-meteo.com/en/docs/geocoding-api) |
+| **Função** | Converte endereço do CEP em latitude/longitude |
+| **URL** | `https://nominatim.openstreetmap.org/search` |
+| **Parâmetros** | `format=jsonv2`, `limit=1`, `countrycodes=br`, `q=<endereco completo>` |
+| **Documentação** | [nominatim.openstreetmap.org](https://nominatim.openstreetmap.org/) |
 | **Autenticação** | Não requer |
-| **Campos usados** | `latitude`, `longitude`, `name` |
+| **Campos usados** | `lat`, `lon`, `display_name` |
 
 ### 3. Open-Meteo Forecast
 
@@ -41,8 +41,8 @@ Camada de integração com serviços de terceiros. O backend consome estas APIs;
 
 ```
 CEP
-  → ViaCEP          → localidade + UF
-  → Geocoding       → latitude + longitude
+  → ViaCEP          → logradouro + bairro + localidade + UF
+  → Nominatim       → latitude + longitude
   → Forecast        → temperatura máxima
   → JSON consolidado
 ```

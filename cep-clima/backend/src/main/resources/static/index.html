@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CEP + Clima | Faculdade ESUDA</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Raleway:wght@600;700&display=swap" rel="stylesheet">
@@ -235,6 +236,30 @@
     color: var(--text);
   }
 
+  .map-wrap {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+
+  .map-wrap.show {
+    display: block;
+  }
+
+  .map-title {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .map-box {
+    height: 260px;
+    border: 1px solid var(--border);
+  }
+
   .site-footer {
     background: var(--esuda-green);
     color: var(--white);
@@ -306,23 +331,30 @@
         <li><span class="lbl">Endereço</span><span class="val" id="endereco"></span></li>
         <li><span class="lbl">Bairro</span><span class="val" id="bairro"></span></li>
         <li><span class="lbl">Estado</span><span class="val" id="uf"></span></li>
-        <li><span class="lbl">Latitude</span><span class="val" id="lat"></span></li>
-        <li><span class="lbl">Longitude</span><span class="val" id="lng"></span></li>
       </ul>
+
+      <div class="map-wrap" id="mapWrap">
+        <div class="map-title">Localização aproximada</div>
+        <div id="map" class="map-box" aria-label="Mapa da localização"></div>
+      </div>
     </section>
   </main>
 
   <footer class="site-footer">
   Recife — Pernambuco · <a href="https://esuda.edu.br" target="_blank" rel="noopener">esuda.edu.br</a>
   </footer>
-  <div class="footer-dark">Projeto esudaPosEs · ViaCEP + Open-Meteo</div>
+  <div class="footer-dark">Projeto esudaPosEs · ViaCEP + Open-Meteo + OpenStreetMap Nominatim</div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
     const form = document.getElementById('form');
     const cepInput = document.getElementById('cep');
     const btn = document.getElementById('btn');
     const message = document.getElementById('message');
     const results = document.getElementById('results');
+    const mapWrap = document.getElementById('mapWrap');
+    let leafletMap = null;
+    let leafletMarker = null;
 
     cepInput.addEventListener('input', (e) => {
       let v = e.target.value.replace(/\D/g, '');
@@ -340,6 +372,31 @@
       message.textContent = '';
     }
 
+    function hideMap() {
+      mapWrap.classList.remove('show');
+    }
+
+    function renderMap(latitude, longitude, cityName) {
+      mapWrap.classList.add('show');
+
+      if (!leafletMap) {
+        leafletMap = L.map('map').setView([latitude, longitude], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(leafletMap);
+      } else {
+        leafletMap.setView([latitude, longitude], 13);
+      }
+
+      if (leafletMarker) {
+        leafletMap.removeLayer(leafletMarker);
+      }
+
+      leafletMarker = L.marker([latitude, longitude]).addTo(leafletMap);
+
+      setTimeout(() => leafletMap.invalidateSize(), 80);
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const cep = cepInput.value.replace(/\D/g, '');
@@ -352,6 +409,7 @@
 
       hideMessage();
       results.classList.remove('show');
+      hideMap();
       showMessage('Consultando...', 'loading');
       btn.disabled = true;
 
@@ -373,11 +431,24 @@
         document.getElementById('endereco').textContent = data.endereco.logradouro;
         document.getElementById('bairro').textContent = data.endereco.bairro;
         document.getElementById('uf').textContent = data.endereco.uf;
-        document.getElementById('lat').textContent = data.coordenadas.latitude.toFixed(4);
-        document.getElementById('lng').textContent = data.coordenadas.longitude.toFixed(4);
+
+        const hasCoordinates = data.coordenadas
+          && Number.isFinite(data.coordenadas.latitude)
+          && Number.isFinite(data.coordenadas.longitude);
+
+        if (hasCoordinates) {
+          renderMap(
+            data.coordenadas.latitude,
+            data.coordenadas.longitude,
+            data.endereco.localidade + ', ' + data.endereco.uf
+          );
+        } else {
+          hideMap();
+        }
 
         results.classList.add('show');
       } catch {
+        hideMap();
         showMessage('Erro de conexão. Verifique se o projeto está rodando.', 'error');
       } finally {
         btn.disabled = false;

@@ -15,53 +15,20 @@ import org.springframework.web.server.ResponseStatusException;
 public class ClimaService {
 
 	private final RestClient restClient;
+	private final MapaService mapaService;
 
-	public ClimaService() {
+	public ClimaService(MapaService mapaService) {
 		this.restClient = RestClient.create();
+		this.mapaService = mapaService;
 	}
 
 	public Map<String, Object> buscarClimaPorCep(String cep) {
-		String cepLimpo = cep.replaceAll("\\D", "");
-		if (cepLimpo.length() != 8) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CEP inválido");
-		}
-
 		try {
-			Map<String, Object> viaCep = restClient.get()
-					.uri("https://viacep.com.br/ws/{cep}/json/", cepLimpo)
-					.retrieve()
-					.body(new ParameterizedTypeReference<Map<String, Object>>() {});
+			Map<String, Object> mapa = mapaService.buscarMapaPorCep(cep);
+			Map<String, Object> coordenadas = (Map<String, Object>) mapa.get("coordenadas");
 
-			if (viaCep == null || Boolean.TRUE.equals(viaCep.get("erro"))) {
-				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CEP não encontrado");
-			}
-
-			String localidade = (String) viaCep.get("localidade");
-			String uf = (String) viaCep.get("uf");
-			String nomeBusca = localidade + ", " + uf;
-
-			Map<String, Object> geoResponse = restClient.get()
-					.uri(uriBuilder -> uriBuilder
-							.scheme("https")
-							.host("geocoding-api.open-meteo.com")
-							.path("/v1/search")
-							.queryParam("name", nomeBusca)
-							.queryParam("count", 1)
-							.queryParam("language", "pt")
-							.queryParam("countryCode", "BR")
-							.build())
-					.retrieve()
-					.body(new ParameterizedTypeReference<Map<String, Object>>() {});
-
-			List<Map<String, Object>> results = extrairResultadosGeocoding(geoResponse);
-			if (results.isEmpty()) {
-				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Localidade não encontrada");
-			}
-
-			Map<String, Object> local = results.get(0);
-			double latitude = ((Number) local.get("latitude")).doubleValue();
-			double longitude = ((Number) local.get("longitude")).doubleValue();
-			String nome = (String) local.get("name");
+			double latitude = ((Number) coordenadas.get("latitude")).doubleValue();
+			double longitude = ((Number) coordenadas.get("longitude")).doubleValue();
 
 			Map<String, Object> forecast = restClient.get()
 					.uri(uriBuilder -> uriBuilder
@@ -81,45 +48,24 @@ public class ClimaService {
 			List<String> datas = (List<String>) daily.get("time");
 			List<Number> temperaturas = (List<Number>) daily.get("temperature_2m_max");
 
-			Map<String, Object> endereco = new LinkedHashMap<>();
-			endereco.put("logradouro", viaCep.get("logradouro"));
-			endereco.put("bairro", viaCep.get("bairro"));
-			endereco.put("localidade", localidade);
-			endereco.put("uf", uf);
-
-			Map<String, Object> coordenadas = new LinkedHashMap<>();
-			coordenadas.put("latitude", latitude);
-			coordenadas.put("longitude", longitude);
-			coordenadas.put("nome", nome);
-
 			Map<String, Object> clima = new LinkedHashMap<>();
 			clima.put("data", datas.get(0));
 			clima.put("temperatura_maxima_celsius", temperaturas.get(0).doubleValue());
 
-			Map<String, Object> resposta = new LinkedHashMap<>();
-			resposta.put("cep", viaCep.get("cep"));
-			resposta.put("endereco", endereco);
-			resposta.put("coordenadas", coordenadas);
+			Map<String, Object> resposta = new LinkedHashMap<>(mapa);
 			resposta.put("clima", clima);
 
 			return resposta;
 		} catch (ResponseStatusException ex) {
 			throw ex;
 		} catch (RestClientException ex) {
-			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro ao consultar serviço externo");
+			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro ao consultar API de clima");
 		}
-	}
-
-	private List<Map<String, Object>> extrairResultadosGeocoding(Map<String, Object> geoResponse) {
-		if (geoResponse == null || geoResponse.get("results") == null) {
-			return List.of();
-		}
-		return (List<Map<String, Object>>) geoResponse.get("results");
 	}
 
 	private Map<String, Object> extrairDaily(Map<String, Object> forecast) {
 		if (forecast == null || forecast.get("daily") == null) {
-			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro ao consultar serviço externo");
+			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro ao consultar API de clima");
 		}
 		return (Map<String, Object>) forecast.get("daily");
 	}

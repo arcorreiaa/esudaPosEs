@@ -6,12 +6,14 @@ Camada de apresentação: HTML, CSS e JavaScript.
 
 | Arquivo | Função |
 |---------|--------|
-| `index.html` | Página com campo de CEP e resultado |
+| `index.html` | Página com campo de CEP, resultado e mapa |
 | `esuda-logo.png` | Logo ESUDA |
 
 ## Como funciona
 
 O Spring Boot serve esses arquivos em `http://localhost:8080` e a página chama a API com `fetch('/clima/' + cep)` no mesmo servidor.
+
+O card de resultado mostra endereço e clima, e usa as coordenadas retornadas pela API para renderizar o mapa com Leaflet. Latitude e longitude não são exibidas no card.
 
 ## Editar a interface
 

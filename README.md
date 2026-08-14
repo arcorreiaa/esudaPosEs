@@ -10,7 +10,9 @@ Repositório de entregas e laboratórios do curso na **Faculdade ESUDA** — Rec
 
 ## Sobre
 
-Este repositório reúne trabalhos desenvolvidos pelos alunos, organizados por projeto. O principal entregável é o **CEP + Clima**: consulta de endereço e temperatura a partir de um CEP brasileiro.
+Este repositório reúne trabalhos, exemplos e laboratórios desenvolvidos no curso da **Faculdade ESUDA**, organizados por projeto. O principal entregável é o **CEP + Clima**, uma aplicação web e API REST que consulta um CEP brasileiro, localiza o endereço no mapa e retorna a temperatura máxima prevista para o dia.
+
+O repositório também contém um exemplo de Spring Boot, um laboratório sobre condições de corrida e materiais de apoio sobre as APIs externas utilizadas.
 
 ---
 
@@ -18,8 +20,9 @@ Este repositório reúne trabalhos desenvolvidos pelos alunos, organizados por p
 
 | Ferramenta | Obrigatório para |
 |------------|------------------|
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Rodar o projeto completo |
-| [Java 17](https://adoptium.net/) | Rodar apenas o backend sem Docker |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Rodar o CEP + Clima completo |
+| [Java 17](https://adoptium.net/) | Rodar os projetos Java localmente |
+| Maven Wrapper | Executar o backend sem Docker |
 | Git | Clonar o repositório |
 
 ---
@@ -34,6 +37,8 @@ docker compose up --build
 
 Acesse **http://localhost:8080** e teste com o CEP `50050-480` (Recife).
 
+Endpoints disponíveis: `GET /clima/{cep}` e `GET /mapa/{cep}`. O CEP pode ser informado com ou sem hífen.
+
 Para encerrar: `docker compose down`
 
 Documentação detalhada: [cep-clima/README.md](cep-clima/README.md)
@@ -44,9 +49,13 @@ Documentação detalhada: [cep-clima/README.md](cep-clima/README.md)
 
 ```
 esudaPosEs/
-├── cep-clima/          # Entrega CEP + Clima (frontend, backend, docker)
-├── api/demospring01/   # Exemplo Spring Boot
-└── docs/               # Materiais e laboratórios
+├── api/
+│   └── demospring01/   # Exemplo Spring Boot
+├── cep-clima/          # Entrega CEP + Clima
+│   ├── backend/        # API Spring Boot e página servida pela aplicação
+│   ├── frontend/       # HTML, CSS, JavaScript e logo
+│   └── third-party/    # Documentação das APIs externas
+└── docs/               # Diagrama e laboratório de concorrência
 ```
 
 ---
@@ -55,8 +64,9 @@ esudaPosEs/
 
 | Projeto | Descrição | Documentação |
 |---------|-----------|--------------|
-| CEP + Clima | CEP → endereço → temperatura máxima | [cep-clima/README.md](cep-clima/README.md) |
+| CEP + Clima | CEP → endereço → coordenadas → temperatura máxima | [cep-clima/README.md](cep-clima/README.md) |
 | Demo Spring | Projeto base Spring Boot | [api/demospring01](api/demospring01) |
+| Race Condition | Laboratório de contadores compartilhados e concorrência | [docs/Laboratorio-RaceCondition](docs/Laboratorio-RaceCondition) |
 
 ---
 
@@ -66,7 +76,9 @@ esudaPosEs/
 |----------|---------|
 | `Cannot connect to the Docker daemon` | Inicie o Docker Desktop e aguarde ficar pronto |
 | `port is already allocated` | Porta 8080 em uso — execute `docker compose down` ou libere a porta |
-| Comando falha | Confirme que está dentro da pasta `cep-clima` |
+| Erro de conexão na página | Execute `docker compose up --build` dentro da pasta `cep-clima` |
+| Erro no build: `backend/.mvn` não encontrado | Execute `mvn wrapper:wrapper` dentro de `cep-clima/backend` e tente novamente |
+| `permission denied` no `mvnw` | Execute `chmod +x mvnw` dentro de `cep-clima/backend` |
 
 ---
 

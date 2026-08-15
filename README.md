@@ -77,6 +77,7 @@ esudaPosEs/
 | `Cannot connect to the Docker daemon` | Inicie o Docker Desktop e aguarde ficar pronto |
 | `port is already allocated` | Porta 8080 em uso — execute `docker compose down` ou libere a porta |
 | Erro de conexão na página | Execute `docker compose up --build` dentro da pasta `cep-clima` |
+| Erro no build: `backend/.mvn` não encontrado | Execute `mvn wrapper:wrapper` dentro de `cep-clima/backend` e tente novamente |
 | `permission denied` no `mvnw` | Execute `chmod +x mvnw` dentro de `cep-clima/backend` |
 
 ---

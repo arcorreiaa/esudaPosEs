@@ -148,6 +148,7 @@ O CEP pode ser enviado com ou sem hífen (8 dígitos).
 | `port is already allocated` | Libere a porta 8080 ou execute `docker compose down` |
 | Erro de conexão na página | Execute `docker compose up` dentro de `cep-clima/` |
 | `permission denied` no `mvnw` | `chmod +x backend/mvnw` |
+| Erro no build Docker: `COPY backend/.mvn .mvn` com `"/backend/.mvn": not found` | Execute `mvn wrapper:wrapper` dentro de `backend/` e veja detalhes em [backend/README.md](backend/README.md#problema-conhecido) |
 
 ---
 

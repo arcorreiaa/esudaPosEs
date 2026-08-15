@@ -18,6 +18,138 @@ descreve **como o sistema funciona por dentro** e por que foi construído assim.
 
 ---
 
+## 1. Visão geral
+
+O sistema recebe um CEP brasileiro e devolve o endereço correspondente, suas coordenadas
+geográficas e a temperatura máxima prevista para o dia naquela localidade.
+
+Não há banco de dados nem estado próprio: cada requisição é resolvida consultando três APIs
+públicas em sequência. O valor do sistema está inteiramente na **orquestração** dessas
+chamadas — traduzir CEP em endereço, endereço em coordenada, coordenada em previsão.
+
+### Decisões estruturais
+
+Quatro escolhas definem o formato do projeto:
+
+**Um único artefato serve API e interface.** Não existe servidor web separado nem processo
+de build de frontend: HTML, CSS e JavaScript são arquivos estáticos empacotados dentro do
+próprio JAR e servidos pelo Spring em `/`. A página e a API compartilham a mesma origem, o
+que dispensa CORS em produção e reduz o deploy a um contêiner.
+
+**A orquestração vive na camada de serviço.** Os controllers recebem o CEP e delegam — não
+há um `try/catch` sequer neles. Toda a coordenação das chamadas externas fica nos serviços,
+e o tratamento de erro é centralizado em um único ponto ([seção 6](#6-tratamento-de-erros)).
+
+**O fuso horário é resolvido na origem.** A consulta ao Open-Meteo envia `timezone=auto`,
+fazendo a API calcular o dia segundo o fuso do ponto consultado. Sem esse parâmetro, "hoje"
+seria calculado em UTC e a previsão poderia se referir ao dia seguinte no Brasil.
+
+**As dependências de CDN são verificadas.** O CSS e o JavaScript do Leaflet são carregados
+com `integrity` e `crossorigin`, de modo que um CDN comprometido não consegue injetar código
+na página.
+
+---
+
+## 2. Diagrama de arquitetura
+
+O diagrama da implementação está em
+[`arquitetura-esuda-pos-es.drawio`](arquitetura-esuda-pos-es.drawio), com quatro páginas:
+
+| Página | Conteúdo | Seção correspondente |
+|--------|----------|---------------------|
+| 01 — Contexto e escopo | Fronteira do sistema, dependências externas e módulos satélites | [1](#1-visão-geral) e [5](#5-integrações-externas) |
+| 02 — Componentes CEP Clima | Classes reais e quem chama quem | [3](#3-componentes) |
+| 03 — Fluxo GET clima | Sequência completa da rota principal | [4](#4-fluxo-de-uma-requisição) |
+| 04 — Build e execução | Pipeline Docker multi-estágio | [7](#7-build-e-execução) |
+
+O arquivo abre em [draw.io](https://app.diagrams.net). Este documento complementa o
+diagrama em vez de repeti-lo: o desenho mostra **o que** existe e como se conecta; o texto
+explica **por quê** e registra o que um diagrama não consegue expressar.
+
+---
+
+## 3. Componentes
+
+O backend tem sete classes em três camadas.
+
+| Classe | Camada | Responsabilidade | Depende de |
+|--------|--------|------------------|------------|
+| `CepClimaApplication` | — | Ponto de entrada do Spring Boot | — |
+| `ClimaController` | Entrada | Expõe `GET /clima/{cep}` | `ClimaService` |
+| `MapaController` | Entrada | Expõe `GET /mapa/{cep}` | `MapaService` |
+| `ApiExceptionHandler` | Entrada | Converte exceções em JSON de erro | — |
+| `WebConfig` | Configuração | Define a política de CORS | — |
+| `ClimaService` | Domínio | Consulta a previsão e consolida a resposta | `MapaService` |
+| `MapaService` | Domínio | Valida o CEP, resolve endereço e coordenadas | — |
+
+Na árvore de pacotes, `WebConfig` fica em `config/`, os três primeiros da camada de entrada
+em `controller/` e os dois serviços em `service/`.
+
+Todas as dependências são recebidas por construtor, o que permite instanciar qualquer classe
+em teste sem subir o contexto do Spring.
+
+### MapaService é a peça central
+
+O nome sugere que a classe apenas resolve coordenadas, mas ela concentra três
+responsabilidades: **valida** o CEP, consulta o **ViaCEP** e consulta o **Nominatim**.
+
+Disso decorre uma dependência que a estrutura de pastas não revela: `ClimaService` **depende
+de** `MapaService` e reutiliza seu resultado, em vez de repetir a consulta ao ViaCEP. O
+endpoint `/clima/{cep}` executa internamente todo o trabalho de `/mapa/{cep}` antes de
+buscar a previsão — por isso sua resposta é um superconjunto da do outro, e por isso a
+validação do CEP acontece num único lugar para ambos.
+
+### Dois detalhes que o desenho não alcança
+
+`ApiExceptionHandler` é anotado com `@RestControllerAdvice`, portanto vale para **todos** os
+controllers, não apenas para aquele de onde parte a seta no diagrama.
+
+E `/mapa/{cep}` **não tem consumidor**: o frontend chama exclusivamente `/clima/{cep}`. O
+endpoint funciona e está documentado, mas hoje existe apenas para uso direto da API.
+
+---
+
+## 4. Fluxo de uma requisição
+
+A página 03 do diagrama traz a sequência completa das quatorze mensagens. Esta seção cobre o
+que a sequência não mostra: por que cada etapa existe e o que ela custa.
+
+### Validação em duas camadas
+
+O CEP é limpo e conferido duas vezes — no JavaScript, antes do `fetch`, e em
+`MapaService.validarCep`, que remove tudo que não for dígito e exige exatamente oito. A
+duplicação é intencional: a checagem do frontend dá resposta imediata sem custo de rede; a
+do backend é a que efetivamente protege, já que a API é pública e pode ser chamada
+diretamente. É também o motivo de `50050-480` e `50050480` serem equivalentes.
+
+### As três chamadas são estritamente sequenciais
+
+Cada etapa depende do resultado da anterior: sem endereço não há busca no Nominatim, sem
+coordenadas não há previsão. Nada pode ser paralelizado.
+
+A consequência é que a latência percebida é a **soma** de três chamadas externas, e a
+disponibilidade do sistema é o **produto** das três — basta uma falhar para a requisição
+inteira falhar. Nenhuma resposta é reaproveitada entre requisições.
+
+### A geocodificação é uma aposta calculada
+
+O Nominatim não aceita CEP como chave: faz busca textual. `MapaService` concatena
+logradouro, bairro, localidade, UF e CEP numa única string, restringe a `countrycodes=br` e
+pede `limit=1`, aceitando sempre o primeiro resultado.
+
+A precisão depende, portanto, da qualidade do texto montado. Um CEP único de cidade pequena,
+sem logradouro, produz busca mais genérica e coordenada próxima ao centro do município em
+vez da rua exata. Para o escopo do projeto — mostrar a temperatura da localidade — a
+aproximação é suficiente, e foi confirmada em CEPs rurais durante a verificação.
+
+### A previsão fecha o ciclo
+
+`ClimaService` envia `latitude` e `longitude` ao Open-Meteo pedindo
+`daily=temperature_2m_max`, `forecast_days=1` e `timezone=auto`, e acrescenta o bloco
+`clima` ao objeto devolvido por `MapaService`.
+
+---
+
 ## 5. Integrações externas
 
 As APIs consumidas pelo backend são públicas, gratuitas e não exigem chave. Seus parâmetros
@@ -144,12 +276,14 @@ O status final coincide com o esperado, então o usuário não percebe. As conse
 outras: a mensagem atribui ao mapa uma falha que é do CEP, e **cada CEP inexistente consome
 uma chamada desnecessária ao Nominatim** — um serviço limitado a uma requisição por segundo.
 
-### Nenhum erro é registrado
+### O que chega ao log
 
-`ApiExceptionHandler` converte a exceção em JSON e não escreve nada no log. Durante a
-verificação, o log da aplicação terminou com 22 linhas — todas de inicialização — mesmo
-depois de mais de cinquenta respostas `502`. Uma indisponibilidade de serviço externo em
-produção não deixaria rastro nenhum para diagnóstico.
+`ApiExceptionHandler` converte a exceção em JSON e devolve ao cliente; o fluxo não passa por
+nenhum logger. Na verificação, o log terminou com 22 linhas — todas de inicialização —
+depois de mais de cinquenta respostas `502`.
+
+O efeito prático é que a resposta HTTP é a única fonte de informação sobre uma falha: quem
+opera o sistema não consegue saber, pelo log, que um serviço externo esteve indisponível.
 
 ---
 
@@ -215,13 +349,17 @@ conhecidas do escopo acadêmico.
 
 ### Robustez defensiva
 
-Três pontos do código assumem que a resposta externa veio bem-formada: a lista devolvida
-pelo Nominatim nunca é nula (`MapaService`), as listas de previsão nunca vêm vazias
-(`ClimaService`) e os campos aninhados sempre têm o tipo esperado no cast.
+A página 03 do diagrama já registra, na caixa "fora do tratamento explícito", que respostas
+externas com listas nulas ou vazias podem gerar exceção de runtime. São três premissas: a
+lista devolvida pelo Nominatim nunca é nula, as listas de previsão nunca vêm vazias, e os
+campos aninhados sempre têm o tipo esperado no cast.
 
-Nenhuma dessas premissas falhou durante a verificação — o Nominatim devolve lista vazia em
-vez de corpo nulo, e o Open-Meteo com `forecast_days=1` sempre retorna um elemento. São
-pontos de robustez a endurecer, não defeitos observados.
+A verificação buscou ativamente violá-las e não conseguiu: o Nominatim devolve lista vazia
+em vez de corpo nulo, e o Open-Meteo com `forecast_days=1` sempre retorna um elemento.
+Nenhum `500` ocorreu em cerca de oitenta requisições, incluindo dois picos de concorrência.
+
+O risco apontado no diagrama existe no código, mas depende de as APIs mudarem de
+comportamento. É robustez a endurecer, não falha observada.
 
 ### Fragilidade sob concorrência
 

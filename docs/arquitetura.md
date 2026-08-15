@@ -58,8 +58,7 @@ explica boa parte das [limitações da seção 8](#8-limitações-conhecidas).
 
 ## 2. Diagrama de arquitetura
 
-O diagrama da implementação está em
-[`arquitetura-esuda-pos-es.drawio`](arquitetura-esuda-pos-es.drawio), com quatro páginas:
+O diagrama da implementação está em [`Felipe.drawio`](Felipe.drawio), com quatro páginas:
 
 | Página | Conteúdo | Seção correspondente |
 |--------|----------|---------------------|

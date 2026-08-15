@@ -58,10 +58,10 @@ explica boa parte das [limitações da seção 8](#8-limitações-conhecidas).
 
 ## 2. Diagrama de arquitetura
 
-![Contexto do repositório e fronteira do sistema CEP + Clima](Felipe.drawio.png)
+![Contexto do repositório e fronteira do sistema CEP + Clima](Felipe-01-contexto.drawio.png)
 
-*Página 01 do diagrama: contexto e escopo. O arquivo completo,
-[`Felipe.drawio`](Felipe.drawio), tem quatro páginas:*
+*Página 01: contexto e escopo. O arquivo editável,
+[`Felipe.drawio`](Felipe.drawio), reúne as quatro páginas:*
 
 | Página | Conteúdo | Seção correspondente |
 |--------|----------|---------------------|
@@ -77,6 +77,8 @@ explica **por quê** e registra o que um diagrama não consegue expressar.
 ---
 
 ## 3. Componentes
+
+![Componentes e dependências do CEP + Clima](Felipe-02-componentes.drawio.png)
 
 O backend tem sete classes em três camadas.
 
@@ -123,8 +125,10 @@ endpoint funciona e está documentado, mas hoje existe apenas para uso direto da
 
 ## 4. Fluxo de uma requisição
 
-A página 03 do diagrama traz a sequência completa das quatorze mensagens. Esta seção cobre o
-que a sequência não mostra: por que cada etapa existe e o que ela custa.
+![Sequência completa de GET /clima/{cep}](Felipe-03-fluxo.drawio.png)
+
+O diagrama acima traz a sequência completa das quatorze mensagens. Esta seção cobre o que a
+sequência não mostra: por que cada etapa existe e o que ela custa.
 
 ### Validação em duas camadas
 
@@ -314,6 +318,8 @@ opera o sistema não consegue saber, pelo log, que um serviço externo esteve in
 ---
 
 ## 7. Build e execução
+
+![Build multi-estágio e execução em contêiner](Felipe-04-build.drawio.png)
 
 O `Dockerfile` usa build em dois estágios. O primeiro parte de uma imagem com JDK, copia o
 `pom.xml`, o código-fonte e, este é o ponto importante, copia `frontend/index.html` e

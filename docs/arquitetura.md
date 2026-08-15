@@ -58,7 +58,10 @@ explica boa parte das [limitações da seção 8](#8-limitações-conhecidas).
 
 ## 2. Diagrama de arquitetura
 
-O diagrama da implementação está em [`Felipe.drawio`](Felipe.drawio), com quatro páginas:
+![Contexto do repositório e fronteira do sistema CEP + Clima](Felipe.drawio.png)
+
+*Página 01 do diagrama: contexto e escopo. O arquivo completo,
+[`Felipe.drawio`](Felipe.drawio), tem quatro páginas:*
 
 | Página | Conteúdo | Seção correspondente |
 |--------|----------|---------------------|

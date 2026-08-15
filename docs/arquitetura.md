@@ -18,6 +18,67 @@ descreve **como o sistema funciona por dentro** e por que foi construído assim.
 
 ---
 
+## 5. Integrações externas
+
+As APIs consumidas pelo backend são públicas, gratuitas e não exigem chave. Seus parâmetros
+e campos estão detalhados em [third-party/README.md](../cep-clima/third-party/README.md);
+esta seção cobre apenas o que constitui decisão de arquitetura.
+
+### Por que três APIs
+
+Nenhuma delas resolve o problema sozinha. O ViaCEP conhece CEPs, mas não coordenadas. O
+Open-Meteo precisa de latitude e longitude e não sabe o que é um CEP. O Nominatim é a ponte
+entre os dois. Daí o encadeamento — e daí também o fato de que a latência de uma consulta é
+a **soma** de três chamadas de rede, não a de uma.
+
+### Duas categorias de chamada externa
+
+O sistema depende de seis serviços externos, divididos em dois grupos com propriedades
+bem diferentes:
+
+| Origem | Serviço | Finalidade |
+|--------|---------|-----------|
+| Backend | ViaCEP | CEP → endereço |
+| Backend | Nominatim | Endereço → coordenadas |
+| Backend | Open-Meteo | Coordenadas → temperatura máxima |
+| Navegador | `tile.openstreetmap.org` | Imagens do mapa |
+| Navegador | `unpkg.com` | CSS e JavaScript do Leaflet |
+| Navegador | `fonts.googleapis.com` | Fontes da interface |
+
+A distinção tem consequências práticas. As chamadas do navegador partem da máquina do
+usuário e expõem o IP dele a terceiros; as do backend partem do servidor. E se a API cair,
+o mapa continua desenhando tiles normalmente — só não recebe coordenadas novas.
+
+Os recursos do Leaflet são carregados com verificação de integridade (`integrity` e
+`crossorigin`), o que impede que um CDN comprometido injete código na página.
+
+### Restrições do Nominatim
+
+O Nominatim é operado pela OpenStreetMap Foundation e mantido por doações. Sua política de
+uso impõe condições que afetam diretamente este projeto:
+
+- **`User-Agent` identificando a aplicação é obrigatório** — requisições sem ele são
+  bloqueadas. O projeto envia `cep-clima-esuda/1.0`, cumprindo a exigência.
+- **No máximo uma requisição por segundo.**
+- **Uso intenso deve rodar em instância própria**, não no serviço público.
+
+O sistema não implementa cache nem controle de taxa: cada consulta gera uma chamada nova,
+mesmo para um CEP consultado segundos antes. Para o uso acadêmico a que o projeto se
+destina isso é aceitável; sob concorrência real, é o primeiro ponto a mudar — veja a
+[seção 8](#8-limitações-conhecidas).
+
+### Acoplamento a formatos externos
+
+As respostas são consumidas como `Map<String, Object>`, com as chaves lidas por nome em
+tempo de execução (`daily`, `temperature_2m_max`, `lat`, `lon`). Não existe classe que
+descreva o formato esperado. O código fica curto; em troca, uma mudança de formato em
+qualquer das três APIs só se manifesta quando a requisição roda — nunca na compilação.
+
+O tratamento do campo `erro` do ViaCEP, descrito na [seção 6](#6-tratamento-de-erros),
+mostra esse custo na prática.
+
+---
+
 ## 6. Tratamento de erros
 
 Os serviços não devolvem código de erro nem `null` quando algo falha: lançam

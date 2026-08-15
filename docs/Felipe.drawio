@@ -4,7 +4,7 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="ctx-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontColor=#0F172A;" value="&lt;b&gt;esudaPosEs — contexto do repositório&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 14px;&quot; color=&quot;#475569&quot;&gt;O CEP + Clima é o sistema principal; os demais módulos são exemplos e laboratórios independentes.&lt;/font&gt;" vertex="1">
+        <mxCell id="ctx-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontColor=#0F172A;" value="&lt;b&gt;CEP + Clima — contexto do sistema&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 14px;&quot; color=&quot;#475569&quot;&gt;Visão geral das interações entre usuário, aplicação e serviços externos.&lt;/font&gt;" vertex="1">
           <mxGeometry height="60" width="1510" x="40" y="20" as="geometry" />
         </mxCell>
         <mxCell id="ctx-user" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E3A8A;strokeColor=#1E40AF;fontColor=#FFFFFF;fontSize=16;strokeWidth=2;" value="&lt;b&gt;Usuário&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;Consulta um CEP pelo navegador&lt;/font&gt;" vertex="1">
@@ -61,21 +61,6 @@
               <mxPoint x="405" y="718.43" />
             </Array>
           </mxGeometry>
-        </mxCell>
-        <mxCell id="ctx-mod-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=17;fontColor=#334155;" value="&lt;b&gt;Outros módulos do repositório (fora do fluxo CEP + Clima)&lt;/b&gt;" vertex="1">
-          <mxGeometry height="35" width="800" x="40" y="735" as="geometry" />
-        </mxCell>
-        <mxCell id="ctx-demo" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontColor=#4C1D95;fontSize=13;strokeWidth=2;" value="&lt;b&gt;api/demospring01&lt;/b&gt;&lt;br&gt;Exemplo Spring Boot&lt;br&gt;GET / → “Hello, World!”" vertex="1">
-          <mxGeometry height="125" width="330" x="40" y="790" as="geometry" />
-        </mxCell>
-        <mxCell id="ctx-compose" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontColor=#4C1D95;fontSize=13;strokeWidth=2;" value="&lt;b&gt;api/compose.yaml&lt;/b&gt;&lt;br&gt;Laboratório Docker Compose&lt;br&gt;Nginx (8080/8081) + MySQL&lt;br&gt;&lt;i&gt;Não conectado ao demospring01&lt;/i&gt;" vertex="1">
-          <mxGeometry height="125" width="350" x="405" y="790" as="geometry" />
-        </mxCell>
-        <mxCell id="ctx-race" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontColor=#4C1D95;fontSize=13;strokeWidth=2;" value="&lt;b&gt;docs/Laboratorio-RaceCondition&lt;/b&gt;&lt;br&gt;Laboratório Java 17&lt;br&gt;Contador compartilhado vs. sincronizado" vertex="1">
-          <mxGeometry height="125" width="360" x="790" y="790" as="geometry" />
-        </mxCell>
-        <mxCell id="ctx-docs" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=13;strokeWidth=2;" value="&lt;b&gt;docs/&lt;/b&gt;&lt;br&gt;Diagramas, documentação técnica e materiais acadêmicos" vertex="1">
-          <mxGeometry height="125" width="355" x="1185" y="790" as="geometry" />
         </mxCell>
         <mxCell id="MHtck6l1hChlj_OSwbJc-2" parent="1" style="swimlane;html=1;rounded=1;startSize=40;horizontal=1;fillColor=#FFF7ED;swimlaneFillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=17;fontStyle=1;strokeWidth=2;" value="&lt;b&gt;Chamadas do Navegador&lt;/b&gt;" vertex="1">
           <mxGeometry height="195" width="350" x="1070" y="550" as="geometry" />

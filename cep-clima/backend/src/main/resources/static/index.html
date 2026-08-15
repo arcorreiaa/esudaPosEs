@@ -399,13 +399,15 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const cep = cepInput.value.replace(/\D/g, '');
+      const cepInformado = cepInput.value.trim();
 
-      if (cep.length !== 8) {
-        showMessage('CEP inválido. Digite 8 números.', 'error');
+      if (!/^\d{8}$|^\d{5}-\d{3}$/.test(cepInformado)) {
+        showMessage('CEP inválido. Use 8 números, com ou sem hífen.', 'error');
         results.classList.remove('show');
         return;
       }
+
+      const cep = cepInformado.replace('-', '');
 
       hideMessage();
       results.classList.remove('show');

@@ -50,9 +50,9 @@ seria calculado em UTC e a previsão poderia se referir ao dia seguinte no Brasi
 carregados com `integrity` e `crossorigin`, de modo que um CDN comprometido não consegue
 injetar código na página. A folha do Google Fonts, também externa, não tem essa proteção.
 
-O projeto declara **uma única dependência**, `spring-boot-starter-webmvc`, sobre Spring Boot
-4.1.0 e Java 17. Não há starter de teste, de persistência nem de observabilidade, o que
-explica boa parte das [limitações da seção 8](#8-limitações-conhecidas).
+O projeto usa `spring-boot-starter-webmvc` em execução e `spring-boot-starter-test` apenas
+nos testes, sobre Spring Boot 4.1.0 e Java 17. Não há dependência de persistência nem de
+observabilidade, o que explica parte das [limitações da seção 8](#8-limitações-conhecidas).
 
 ---
 
@@ -132,11 +132,12 @@ sequência não mostra: por que cada etapa existe e o que ela custa.
 
 ### Validação em duas camadas
 
-O CEP é limpo e conferido duas vezes: no JavaScript, antes do `fetch`, e em
-`MapaService.validarCep`, que remove tudo que não for dígito e exige exatamente oito. A
-duplicação é intencional: a checagem do frontend dá resposta imediata sem custo de rede; a
-do backend é a que efetivamente protege, já que a API é pública e pode ser chamada
-diretamente. É também o motivo de `50050-480` e `50050480` serem equivalentes.
+O CEP é conferido duas vezes: no JavaScript, antes do `fetch`, e em
+`MapaService.validarCep`. Ambos aceitam apenas oito dígitos ou o formato `NNNNN-NNN`; o
+hífen é removido somente depois da validação. A duplicação é intencional: a checagem do
+frontend dá resposta imediata sem custo de rede; a do backend é a que efetivamente protege,
+já que a API é pública e pode ser chamada diretamente. É também o motivo de `50050-480` e
+`50050480` serem equivalentes.
 
 ### As três chamadas são estritamente sequenciais
 
@@ -340,34 +341,15 @@ Executando pelo Maven, sem Docker, essa cópia não acontece e o Spring serve o 
 estiver em `static/`. Como as duas cópias podem divergir, e atualmente divergem, os dois
 modos de execução podem apresentar telas diferentes.
 
-### O Maven Wrapper ausente
+### Maven Wrapper versionado
 
-Como já registrado em
-[backend/README.md](../cep-clima/backend/README.md#problema-conhecido) e na página 04 do
-diagrama, o `.gitignore` ignora `.mvn/` enquanto o `Dockerfile` executa
-`COPY backend/.mvn .mvn`.
+O repositório inclui os scripts `mvnw` e `mvnw.cmd` e o arquivo
+`backend/.mvn/wrapper/maven-wrapper.properties`. Assim, o Maven 3.9.16 é obtido de forma
+reproduzível sem exigir uma instalação global. O mesmo wrapper é usado na execução local e
+no estágio de build do Docker.
 
-O ângulo que os READMEs não cobrem é que o mesmo arquivo ausente atinge os **dois** caminhos
-de execução. O `mvnw` também depende dele, como se verifica em clone limpo:
-
-```
-$ ls -a cep-clima/backend
-.dockerignore  .gitattributes  Dockerfile  README.md  mvnw  mvnw.cmd  pom.xml  src
-
-$ ./mvnw -v
-./mvnw: line 117: ./.mvn/wrapper/maven-wrapper.properties: No such file or directory
-```
-
-Ou seja, o caminho alternativo `./mvnw spring-boot:run` esbarra no mesmo obstáculo que o
-build Docker: um `mvn` instalado no sistema funcionaria, o wrapper não.
-
-Versionar `backend/.mvn/wrapper/maven-wrapper.properties` resolveria os dois de uma vez.
-Como o `.gitignore` ignora o diretório inteiro, não basta uma negação com `!`: seria preciso
-trocar o padrão para `.mvn/*` mais `!.mvn/wrapper/`, ou adicionar o arquivo com
-`git add -f`.
-
-Vale registrar o que a verificação comprovou: o código-fonte **compila e roda sem nenhuma
-alteração**. O impedimento é o arquivo de configuração ausente, não o projeto.
+O build executa os testes antes de empacotar o JAR. Se algum caso automatizado falhar, a
+imagem não é produzida.
 
 ---
 
@@ -378,7 +360,7 @@ conhecidas do escopo acadêmico.
 
 | Limitação | Efeito |
 |-----------|--------|
-| Sem testes automatizados; o build usa `-DskipTests` | Nenhuma regressão é detectada automaticamente |
+| Cobertura automatizada limitada à validação de CEP | Regressões nas integrações e na composição das respostas ainda dependem de testes manuais |
 | Sem integração contínua | Nenhuma verificação automática roda sobre um pull request |
 | Sem timeout nas chamadas HTTP | Uma API externa lenta prende a thread que atende a requisição |
 | Sem cache nem controle de taxa | Consultas repetidas geram chamadas novas e consomem a cota do Nominatim |

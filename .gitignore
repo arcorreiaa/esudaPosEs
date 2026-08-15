@@ -25,7 +25,6 @@ replay_pid*
 
 dist/
 target/
-.mvn/
 .DS_Store
 
 # IDEs

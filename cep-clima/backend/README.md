@@ -80,3 +80,19 @@ docker compose up --build
 ```
 
 Com isso, a etapa `COPY backend/.mvn .mvn` do Dockerfile passa a encontrar os arquivos esperados e o build deve seguir normalmente.
+
+## Testes
+
+Linux e macOS:
+
+```bash
+./mvnw test
+```
+
+Windows:
+
+```powershell
+.\mvnw.cmd test
+```
+
+Os testes automatizados verificam a validação dos formatos aceitos para CEP.

@@ -7,7 +7,7 @@ COPY backend/src src
 COPY frontend/index.html src/main/resources/static/index.html
 COPY frontend/esuda-logo.png src/main/resources/static/esuda-logo.png
 
-RUN chmod +x mvnw && ./mvnw -q package -DskipTests
+RUN chmod +x mvnw && ./mvnw -q package
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app

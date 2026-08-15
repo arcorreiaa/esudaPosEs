@@ -104,12 +104,11 @@ public class MapaService {
 		}
 	}
 
-	private String validarCep(String cep) {
-		String cepLimpo = cep.replaceAll("\\D", "");
-		if (cepLimpo.length() != 8) {
+	static String validarCep(String cep) {
+		if (cep == null || !cep.matches("\\d{8}|\\d{5}-\\d{3}")) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CEP inválido");
 		}
-		return cepLimpo;
+		return cep.replace("-", "");
 	}
 
 	private String textoOuVazio(Object valor) {

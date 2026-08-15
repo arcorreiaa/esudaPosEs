@@ -32,9 +32,11 @@ chamadas — traduzir CEP em endereço, endereço em coordenada, coordenada em p
 Quatro escolhas definem o formato do projeto:
 
 **Um único artefato serve API e interface.** Não existe servidor web separado nem processo
-de build de frontend: HTML, CSS e JavaScript são arquivos estáticos empacotados dentro do
-próprio JAR e servidos pelo Spring em `/`. A página e a API compartilham a mesma origem, o
-que dispensa CORS em produção e reduz o deploy a um contêiner.
+de build de frontend: a interface inteira é um `index.html` com CSS e JavaScript embutidos,
+que junto do logo forma os dois únicos recursos estáticos empacotados no JAR e servidos pelo
+Spring em `/`. Página e API compartilham a mesma origem, o que torna o CORS desnecessário em
+produção e reduz o deploy a um contêiner. O bean `WebConfig` é resquício do período em que o
+frontend rodava separado — daí a regra permissiva descrita na [seção 3](#3-componentes).
 
 **A orquestração vive na camada de serviço.** Os controllers recebem o CEP e delegam — não
 há um `try/catch` sequer neles. Toda a coordenação das chamadas externas fica nos serviços,
@@ -44,9 +46,13 @@ e o tratamento de erro é centralizado em um único ponto ([seção 6](#6-tratam
 fazendo a API calcular o dia segundo o fuso do ponto consultado. Sem esse parâmetro, "hoje"
 seria calculado em UTC e a previsão poderia se referir ao dia seguinte no Brasil.
 
-**As dependências de CDN são verificadas.** O CSS e o JavaScript do Leaflet são carregados
-com `integrity` e `crossorigin`, de modo que um CDN comprometido não consegue injetar código
-na página.
+**Os recursos do Leaflet são verificados.** O CSS e o JavaScript da biblioteca são
+carregados com `integrity` e `crossorigin`, de modo que um CDN comprometido não consegue
+injetar código na página. A folha do Google Fonts, também externa, não tem essa proteção.
+
+O projeto declara **uma única dependência** — `spring-boot-starter-webmvc`, sobre Spring Boot
+4.1.0 e Java 17. Não há starter de teste, de persistência nem de observabilidade, o que
+explica boa parte das [limitações da seção 8](#8-limitações-conhecidas).
 
 ---
 
@@ -77,21 +83,25 @@ O backend tem sete classes em três camadas.
 | `CepClimaApplication` | — | Ponto de entrada do Spring Boot | — |
 | `ClimaController` | Entrada | Expõe `GET /clima/{cep}` | `ClimaService` |
 | `MapaController` | Entrada | Expõe `GET /mapa/{cep}` | `MapaService` |
-| `ApiExceptionHandler` | Entrada | Converte exceções em JSON de erro | — |
-| `WebConfig` | Configuração | Define a política de CORS | — |
+| `ApiExceptionHandler` | Entrada | Converte `ResponseStatusException` em JSON de erro | — |
+| `WebConfig` | Configuração | Libera CORS com origem `*` apenas em `/clima/**` | — |
 | `ClimaService` | Domínio | Consulta a previsão e consolida a resposta | `MapaService` |
 | `MapaService` | Domínio | Valida o CEP, resolve endereço e coordenadas | — |
 
 Na árvore de pacotes, `WebConfig` fica em `config/`, os três primeiros da camada de entrada
 em `controller/` e os dois serviços em `service/`.
 
-Todas as dependências são recebidas por construtor, o que permite instanciar qualquer classe
-em teste sem subir o contexto do Spring.
+As colaborações entre beans são recebidas por construtor: cada controller recebe seu serviço
+e `ClimaService` recebe `MapaService`. O `RestClient`, porém, é criado dentro de cada
+serviço com `RestClient.create()`. Isso mantém o código curto, mas é também o motivo de não
+haver timeout configurável e de os serviços não poderem ser exercitados em teste sem acessar
+a rede — as duas consequências aparecem na [seção 8](#8-limitações-conhecidas).
 
 ### MapaService é a peça central
 
-O nome sugere que a classe apenas resolve coordenadas, mas ela concentra três
-responsabilidades: **valida** o CEP, consulta o **ViaCEP** e consulta o **Nominatim**.
+Apesar do nome, a classe cobre três etapas: **valida** o CEP, consulta o **ViaCEP** e
+consulta o **Nominatim**. Concentrá-las num só ponto é justamente o que permite a
+`/clima/{cep}` e `/mapa/{cep}` compartilharem a mesma validação.
 
 Disso decorre uma dependência que a estrutura de pastas não revela: `ClimaService` **depende
 de** `MapaService` e reutiliza seu resultado, em vez de repetir a consulta ao ViaCEP. O
@@ -138,9 +148,10 @@ logradouro, bairro, localidade, UF e CEP numa única string, restringe a `countr
 pede `limit=1`, aceitando sempre o primeiro resultado.
 
 A precisão depende, portanto, da qualidade do texto montado. Um CEP único de cidade pequena,
-sem logradouro, produz busca mais genérica e coordenada próxima ao centro do município em
+sem logradouro, produz busca mais genérica e tende a resolver para o centro do município em
 vez da rua exata. Para o escopo do projeto — mostrar a temperatura da localidade — a
-aproximação é suficiente, e foi confirmada em CEPs rurais durante a verificação.
+aproximação é suficiente. Na verificação, CEPs de municípios pequenos foram resolvidos sem
+falha, embora a precisão da coordenada não tenha sido medida.
 
 ### A previsão fecha o ciclo
 
@@ -165,8 +176,8 @@ a **soma** de três chamadas de rede, não a de uma.
 
 ### Duas categorias de chamada externa
 
-O sistema depende de seis serviços externos, divididos em dois grupos com propriedades
-bem diferentes:
+O sistema depende de sete hosts externos, divididos em dois grupos com propriedades bem
+diferentes:
 
 | Origem | Serviço | Finalidade |
 |--------|---------|-----------|
@@ -175,14 +186,17 @@ bem diferentes:
 | Backend | Open-Meteo | Coordenadas → temperatura máxima |
 | Navegador | `tile.openstreetmap.org` | Imagens do mapa |
 | Navegador | `unpkg.com` | CSS e JavaScript do Leaflet |
-| Navegador | `fonts.googleapis.com` | Fontes da interface |
+| Navegador | `fonts.googleapis.com` | Folha de estilo das fontes |
+| Navegador | `fonts.gstatic.com` | Arquivos de fonte propriamente ditos |
 
 A distinção tem consequências práticas. As chamadas do navegador partem da máquina do
-usuário e expõem o IP dele a terceiros; as do backend partem do servidor. E se a API cair,
-o mapa continua desenhando tiles normalmente — só não recebe coordenadas novas.
+usuário e expõem o IP dele a terceiros; as do backend partem do servidor. Os tiles seguem
+disponíveis mesmo com o backend fora — mas isso não se traduz em mapa na tela: a interface
+esconde o mapa a cada nova busca e só volta a exibi-lo depois de uma resposta bem-sucedida.
 
 Os recursos do Leaflet são carregados com verificação de integridade (`integrity` e
-`crossorigin`), o que impede que um CDN comprometido injete código na página.
+`crossorigin`), o que impede que um CDN comprometido injete código na página. A folha do
+Google Fonts é carregada sem essa verificação.
 
 ### Restrições do Nominatim
 
@@ -227,6 +241,12 @@ Falhas de rede nas chamadas externas são capturadas como `RestClientException` 
 cada serviço e reempacotadas como `502 Bad Gateway`, o que distingue "o serviço externo
 falhou" de "o pedido do usuário estava errado".
 
+O handler declara `@ExceptionHandler(ResponseStatusException.class)` e nada além disso. Toda
+exceção de outro tipo passa por fora dele e cai no tratamento padrão do Spring Boot, que
+responde `500` com um corpo diferente — `timestamp`, `status`, `error` e `path`, em vez de
+`message`. O formato de erro descrito acima vale, portanto, para as falhas previstas; os
+caminhos discutidos na [seção 8](#8-limitações-conhecidas) responderiam noutro formato.
+
 ### Comportamento observado
 
 Medido com a aplicação em execução, ~80 requisições reais:
@@ -243,10 +263,12 @@ Medido com a aplicação em execução, ~80 requisições reais:
 | `/` | `200` | Página HTML |
 | Muitas requisições simultâneas | `502` | `{"message":"Erro ao consultar API de mapa"}` |
 
-Apenas três mensagens de erro chegam ao cliente na prática: `CEP inválido`,
-`Localidade não encontrada` e `Erro ao consultar API de mapa`.
+Na verificação apareceram três mensagens: `CEP inválido`, `Localidade não encontrada` e
+`Erro ao consultar API de mapa`. Das outras três definidas no código, duas —
+`Erro ao consultar API do ViaCEP` e `Erro ao consultar API de clima` — simplesmente não
+dispararam, porque essas APIs se mantiveram no ar. A terceira é o caso abaixo.
 
-### O 404 de CEP inexistente não vem de onde parece
+### De onde vem o 404 de CEP inexistente
 
 `MapaService` tenta detectar CEP inexistente logo após consultar o ViaCEP:
 
@@ -263,8 +285,9 @@ $ curl https://viacep.com.br/ws/99999999/json/
 HTTP 200   {"erro": "true"}
 ```
 
-`Boolean.TRUE.equals("true")` é `false`, então essa condição nunca se cumpre e a mensagem
-`"CEP não encontrado"` nunca chega a ser enviada. O que acontece de fato:
+`Boolean.TRUE.equals("true")` é `false` — a comparação é entre tipos diferentes. A condição
+não se cumpre e a mensagem `"CEP não encontrado"` não chega a ser usada. O que acontece de
+fato (`MapaService.java:95`):
 
 1. O ViaCEP responde `200` com `{"erro": "true"}`
 2. A verificação não dispara; o fluxo segue com `localidade` e `uf` nulos
@@ -272,9 +295,10 @@ HTTP 200   {"erro": "true"}
 4. O Nominatim não encontra nada e devolve lista vazia
 5. Aí sim nasce o `404`, com a mensagem `"Localidade não encontrada"`
 
-O status final coincide com o esperado, então o usuário não percebe. As consequências são
-outras: a mensagem atribui ao mapa uma falha que é do CEP, e **cada CEP inexistente consome
-uma chamada desnecessária ao Nominatim** — um serviço limitado a uma requisição por segundo.
+O status final é o mesmo que se esperaria, então o comportamento externo está correto. O
+custo é interno: a mensagem atribui ao mapa uma falha que é do CEP, e **cada CEP inexistente
+consome uma chamada desnecessária ao Nominatim** — serviço limitado a uma requisição por
+segundo.
 
 ### O que chega ao log
 
@@ -308,12 +332,15 @@ Executando pelo Maven, sem Docker, essa cópia não acontece e o Spring serve o 
 estiver em `static/`. Como as duas cópias podem divergir — e atualmente divergem — os dois
 modos de execução podem apresentar telas diferentes.
 
-### Estado do build a partir de um clone limpo
+### O Maven Wrapper ausente
 
-O `.gitignore` inclui `.mvn/`, então o diretório do Maven Wrapper nunca foi versionado. O
-`Dockerfile`, por sua vez, executa `COPY backend/.mvn .mvn`.
+Como já registrado em
+[backend/README.md](../cep-clima/backend/README.md#problema-conhecido) e na página 04 do
+diagrama, o `.gitignore` ignora `.mvn/` enquanto o `Dockerfile` executa
+`COPY backend/.mvn .mvn`.
 
-Verificado em clone limpo do repositório:
+O ângulo que os READMEs não cobrem é que o mesmo arquivo ausente atinge os **dois** caminhos
+de execução. O `mvnw` também depende dele — verificado em clone limpo:
 
 ```
 $ ls -a cep-clima/backend
@@ -323,11 +350,16 @@ $ ./mvnw -v
 ./mvnw: line 117: ./.mvn/wrapper/maven-wrapper.properties: No such file or directory
 ```
 
-Nessa condição, tanto `docker compose up --build` quanto `./mvnw spring-boot:run` falham.
-Versionar `backend/.mvn/wrapper/maven-wrapper.properties` resolve os dois casos.
+Ou seja, o caminho alternativo `./mvnw spring-boot:run` esbarra no mesmo obstáculo que o
+build Docker — um `mvn` instalado no sistema funcionaria, o wrapper não.
+
+Versionar `backend/.mvn/wrapper/maven-wrapper.properties` resolveria os dois de uma vez.
+Como o `.gitignore` ignora o diretório inteiro, não basta uma negação com `!`: seria preciso
+trocar o padrão para `.mvn/*` mais `!.mvn/wrapper/`, ou adicionar o arquivo com
+`git add -f`.
 
 Vale registrar o que a verificação comprovou: o código-fonte **compila e roda sem nenhuma
-alteração**. O impedimento é apenas o arquivo de configuração ausente, não o projeto.
+alteração**. O impedimento é o arquivo de configuração ausente, não o projeto.
 
 ---
 
@@ -339,12 +371,13 @@ conhecidas do escopo acadêmico.
 | Limitação | Efeito |
 |-----------|--------|
 | Sem testes automatizados; o build usa `-DskipTests` | Nenhuma regressão é detectada automaticamente |
-| Sem integração contínua | Nada valida um pull request antes do merge |
+| Sem integração contínua | Nenhuma verificação automática roda sobre um pull request |
 | Sem timeout nas chamadas HTTP | Uma API externa lenta prende a thread que atende a requisição |
 | Sem cache nem controle de taxa | Consultas repetidas geram chamadas novas e consomem a cota do Nominatim |
 | Sem registro de erros em log | Falhas externas não deixam rastro para diagnóstico |
-| `index.html` duplicado | As duas cópias divergem; Docker e Maven servem telas diferentes |
-| Respostas modeladas como `Map` | O contrato da API não existe de forma verificável em lugar nenhum |
+| `index.html` duplicado | As cópias já divergem em uma linha, e nada garante que sigam sincronizadas |
+| Respostas modeladas como `Map` | O contrato está documentado em prosa, mas não é verificado em compilação nem por schema |
+| `server.port` fixo em 8080 | A porta não é configurável por variável de ambiente |
 | Dependência total de serviços externos | Sem internet, ou com qualquer das três APIs fora, o sistema não responde |
 
 ### Robustez defensiva
@@ -366,7 +399,8 @@ comportamento. É robustez a endurecer, não falha observada.
 O Nominatim aplica limite de uso de forma agressiva. Na verificação, quarenta requisições
 simultâneas resultaram em `502` para todas, e o endereço IP permaneceu bloqueado por mais de
 cinco minutos — enquanto ViaCEP e Open-Meteo seguiam respondendo normalmente. Sem cache,
-repetição ou controle de taxa, uso concorrente moderado derruba a funcionalidade.
+repetição ou controle de taxa, sob uso concorrente moderado a funcionalidade fica
+indisponível até o bloqueio expirar.
 
 ---
 

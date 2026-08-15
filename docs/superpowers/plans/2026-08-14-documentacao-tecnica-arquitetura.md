@@ -1,44 +1,44 @@
 # Documentação Técnica de Arquitetura — Plano de Implementação
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Para quem for executar (pessoa ou agente):** use a sub-skill `superpowers:subagent-driven-development` (recomendada) ou `superpowers:executing-plans` para implementar tarefa por tarefa. Os passos usam caixas de seleção (`- [ ]`) para acompanhamento.
 
-**Goal:** Produzir `docs/arquitetura.md`, referência técnica única do projeto CEP + Clima, orientada ao fluxo da requisição e integrando o diagrama draw.io da implementação.
+**Objetivo:** Produzir `docs/arquitetura.md`, referência técnica única do projeto CEP + Clima, orientada ao fluxo da requisição e integrando o diagrama draw.io da implementação.
 
-**Architecture:** Documento markdown único, em oito seções, escrito na ordem em que uma requisição atravessa o sistema. Todo comportamento HTTP afirmado vem de observação empírica da aplicação em execução, nunca de leitura de código. O documento referencia os READMEs existentes em vez de duplicá-los — este repositório já sofre com duplicação (`index.html` divergiu entre duas cópias), e documentação duplicada diverge pelo mesmo mecanismo.
+**Abordagem:** Documento markdown único, em oito seções, escrito na ordem em que uma requisição atravessa o sistema. Todo comportamento HTTP afirmado vem de observação empírica da aplicação em execução, nunca de leitura de código. O documento referencia os READMEs existentes em vez de duplicá-los — este repositório já sofre com duplicação (`index.html` divergiu entre duas cópias), e documentação duplicada diverge pelo mesmo mecanismo.
 
-**Tech Stack:** Markdown, Mermaid (diagrama de sequência, renderizado nativamente pelo GitHub), draw.io (diagrama de arquitetura, fornecido pelo autor).
+**Tecnologias:** Markdown, Mermaid (diagrama de sequência, renderizado nativamente pelo GitHub), draw.io (diagrama de arquitetura, fornecido pelo autor).
 
-**Spec:** `docs/superpowers/specs/2026-08-14-documentacao-tecnica-arquitetura-design.md`
+**Especificação:** `docs/superpowers/specs/2026-08-14-documentacao-tecnica-arquitetura-design.md`
 
 ---
 
 ## Estrutura de arquivos
 
-| Arquivo | Responsabilidade | Status |
-|---------|------------------|--------|
+| Arquivo | Responsabilidade | Situação |
+|---------|------------------|----------|
 | `docs/arquitetura.md` | Todo o conteúdo da documentação técnica. Único entregável do PR | Criar |
 | `docs/<nome>.drawio` + `.png` | Diagrama de arquitetura da implementação | Fornecido pelo autor |
 | `docs/superpowers/specs/*`, `docs/superpowers/plans/*` | Artefatos de processo | **Remover antes do PR** |
 
 Nenhum arquivo de código é criado ou modificado. Nenhum README existente é alterado.
 
-**Por que um arquivo único:** o documento tem ~8 seções curtas fortemente interligadas — o fluxo da requisição referencia os componentes, que referenciam as integrações, que referenciam os erros. Fragmentar em vários arquivos criaria navegação sem reduzir complexidade, e multiplicaria os pontos de divergência.
+**Por que um arquivo único:** o documento tem oito seções curtas fortemente interligadas — o fluxo da requisição referencia os componentes, que referenciam as integrações, que referenciam os erros. Fragmentar em vários arquivos criaria navegação sem reduzir complexidade, e multiplicaria os pontos de divergência.
 
 ---
 
-### Task 1: Consolidar a evidência empírica
+### Tarefa 1: Consolidar a evidência empírica
 
 Um subagente está executando a coleta em paralelo. Esta tarefa consome o relatório dele. **Nenhuma linha da seção 6 pode ser escrita antes desta tarefa fechar.**
 
-**Files:**
-- Create: `docs/superpowers/evidencia-endpoints.md` (arquivo de trabalho, removido antes do PR)
+**Arquivos:**
+- Criar: `docs/superpowers/evidencia-endpoints.md` (arquivo de trabalho, removido antes do PR)
 
-- [ ] **Step 1: Receber e conferir o relatório do subagente**
+- [ ] **Passo 1: Receber e conferir o relatório do subagente**
 
-O relatório precisa conter, para cada caso testado: comando curl, status HTTP e body literal. Casos exigidos:
+O relatório precisa conter, para cada caso testado: comando curl, status HTTP e corpo literal da resposta. Casos exigidos:
 
-| # | Requisição | Esperado pela doc atual |
-|---|-----------|------------------------|
+| # | Requisição | Esperado pela documentação atual |
+|---|-----------|----------------------------------|
 | 1 | `GET /clima/50050480` | 200 |
 | 2 | `GET /clima/50050-480` | 200 (aceita hífen) |
 | 3 | `GET /clima/123` | 400 |
@@ -49,17 +49,17 @@ O relatório precisa conter, para cada caso testado: comando curl, status HTTP e
 | 8 | `GET /` | 200, `text/html` |
 | 9 | CEPs pouco mapeados (`69931000`, `76993000`, `78890000`) | 404 ou 200 |
 
-- [ ] **Step 2: Rejeitar qualquer dado não observado**
+- [ ] **Passo 2: Rejeitar qualquer dado não observado**
 
-Se o relatório trouxer um caso marcado como não testado, com falha de execução, ou com body reconstruído de memória, esse caso **não entra no documento**. A seção 6 registra apenas o que foi observado; o que não foi observado é omitido ou marcado explicitamente como não verificado.
+Se o relatório trouxer um caso marcado como não testado, com falha de execução, ou com corpo reconstruído de memória, esse caso **não entra no documento**. A seção 6 registra apenas o que foi observado; o que não foi observado é omitido ou marcado explicitamente como não verificado.
 
 Este passo existe porque documentar código HTTP por inferência é exatamente o erro que deixou o defeito do `.mvn` passar despercebido por três commits.
 
-- [ ] **Step 3: Salvar a evidência bruta**
+- [ ] **Passo 3: Salvar a evidência bruta**
 
 Grave o relatório literal em `docs/superpowers/evidencia-endpoints.md`. Serve de fonte de consulta durante a escrita e de rastro caso alguém questione um valor. É arquivo de trabalho — não vai para o PR.
 
-- [ ] **Step 4: Commit**
+- [ ] **Passo 4: Commit**
 
 ```bash
 git add docs/superpowers/evidencia-endpoints.md
@@ -68,12 +68,12 @@ git commit -m "chore: registra evidencia empirica dos endpoints"
 
 ---
 
-### Task 2: Esqueleto e seção 1 — Visão geral
+### Tarefa 2: Esqueleto e seção 1 — Visão geral
 
-**Files:**
-- Create: `docs/arquitetura.md`
+**Arquivos:**
+- Criar: `docs/arquitetura.md`
 
-- [ ] **Step 1: Criar o arquivo com cabeçalho, índice e a seção 1**
+- [ ] **Passo 1: Criar o arquivo com cabeçalho, índice e a seção 1**
 
 ```markdown
 # Arquitetura — CEP + Clima
@@ -112,14 +112,14 @@ Spring em `/`. Isso elimina a necessidade de CORS em produção — a página e 
 a mesma origem — e reduz o deploy a um contêiner único.
 ```
 
-- [ ] **Step 2: Verificar que o link relativo resolve**
+- [ ] **Passo 2: Verificar que o link relativo resolve**
 
-Run: `test -f cep-clima/README.md && echo OK` (a partir da raiz do repositório)
-Expected: `OK`
+Executar: `test -f cep-clima/README.md && echo OK` (a partir da raiz do repositório)
+Esperado: `OK`
 
 O link é `../cep-clima/README.md` porque `arquitetura.md` vive em `docs/`.
 
-- [ ] **Step 3: Commit**
+- [ ] **Passo 3: Commit**
 
 ```bash
 git add docs/arquitetura.md
@@ -128,12 +128,12 @@ git commit -m "docs: adiciona visao geral da arquitetura"
 
 ---
 
-### Task 3: Seção 2 — Diagrama de arquitetura (espaço reservado)
+### Tarefa 3: Seção 2 — Diagrama de arquitetura (espaço reservado)
 
-**Files:**
-- Modify: `docs/arquitetura.md`
+**Arquivos:**
+- Modificar: `docs/arquitetura.md`
 
-- [ ] **Step 1: Adicionar a seção com o marcador**
+- [ ] **Passo 1: Adicionar a seção com o marcador**
 
 ```markdown
 ## 2. Diagrama de arquitetura
@@ -155,12 +155,12 @@ git commit -m "docs: adiciona visao geral da arquitetura"
 
 O marcador HTML é comentário: não aparece no markdown renderizado, mas é localizável por busca (`grep DIAGRAMA`) quando o arquivo chegar.
 
-- [ ] **Step 2: Confirmar que o aviso aparece e o bloco comentado não**
+- [ ] **Passo 2: Confirmar que o aviso aparece e o bloco comentado não**
 
-Run: `grep -c "Diagrama em elaboração" docs/arquitetura.md`
-Expected: `1`
+Executar: `grep -c "Diagrama em elaboração" docs/arquitetura.md`
+Esperado: `1`
 
-- [ ] **Step 3: Commit**
+- [ ] **Passo 3: Commit**
 
 ```bash
 git add docs/arquitetura.md
@@ -169,13 +169,13 @@ git commit -m "docs: reserva secao do diagrama de arquitetura"
 
 ---
 
-### Task 4: Seção 3 — Componentes
+### Tarefa 4: Seção 3 — Componentes
 
-**Files:**
-- Modify: `docs/arquitetura.md`
+**Arquivos:**
+- Modificar: `docs/arquitetura.md`
 - Consultar: `cep-clima/backend/src/main/java/br/edu/esuda/cepclima/` (7 classes)
 
-- [ ] **Step 1: Escrever a tabela de componentes**
+- [ ] **Passo 1: Escrever a tabela de componentes**
 
 ```markdown
 ## 3. Componentes
@@ -207,12 +207,12 @@ de endereço ou de geocodificação aparece igualmente nos dois endpoints, e a v
 CEP acontece em um único lugar para ambos.
 ```
 
-- [ ] **Step 2: Conferir a tabela contra o código**
+- [ ] **Passo 2: Conferir a tabela contra o código**
 
-Run: `find cep-clima/backend/src/main/java -name "*.java" | wc -l`
-Expected: `7` — a tabela precisa listar exatamente as classes existentes, nem mais nem menos.
+Executar: `find cep-clima/backend/src/main/java -name "*.java" | wc -l`
+Esperado: `7` — a tabela precisa listar exatamente as classes existentes, nem mais nem menos.
 
-- [ ] **Step 3: Commit**
+- [ ] **Passo 3: Commit**
 
 ```bash
 git add docs/arquitetura.md
@@ -221,12 +221,12 @@ git commit -m "docs: descreve componentes e suas dependencias"
 
 ---
 
-### Task 5: Seção 4 — Fluxo de uma requisição
+### Tarefa 5: Seção 4 — Fluxo de uma requisição
 
-**Files:**
-- Modify: `docs/arquitetura.md`
+**Arquivos:**
+- Modificar: `docs/arquitetura.md`
 
-- [ ] **Step 1: Inserir o diagrama de sequência em Mermaid**
+- [ ] **Passo 1: Inserir o diagrama de sequência em Mermaid**
 
 ````markdown
 ## 4. Fluxo de uma requisição
@@ -265,7 +265,7 @@ sequenceDiagram
 ```
 ````
 
-- [ ] **Step 2: Escrever a narrativa dos quatro estágios**
+- [ ] **Passo 2: Escrever a narrativa dos quatro estágios**
 
 ```markdown
 ### Estágio 1 — Validação
@@ -305,17 +305,17 @@ A resposta final é montada acrescentando o bloco `clima` ao objeto que `MapaSer
 devolveu. É por isso que `/clima/{cep}` retorna um superconjunto de `/mapa/{cep}`.
 ```
 
-- [ ] **Step 3: Validar a sintaxe do Mermaid**
+- [ ] **Passo 3: Validar a sintaxe do Mermaid**
 
-Run:
+Executar:
 ```bash
 docker run --rm -v "$(pwd)":/data minlag/mermaid-cli -i /data/docs/arquitetura.md -o /data/tmp-mermaid.png
 ```
-Expected: execução sem erro de parse.
+Esperado: execução sem erro de parse.
 
 Se a imagem não estiver disponível, o fallback é conferir a renderização no GitHub após o push — o diagrama precisa aparecer desenhado, não como bloco de código. Remova o arquivo temporário: `rm -f tmp-mermaid*.png`
 
-- [ ] **Step 4: Commit**
+- [ ] **Passo 4: Commit**
 
 ```bash
 git add docs/arquitetura.md
@@ -324,12 +324,12 @@ git commit -m "docs: documenta o fluxo completo da requisicao"
 
 ---
 
-### Task 6: Seção 5 — Integrações externas
+### Tarefa 6: Seção 5 — Integrações externas
 
-**Files:**
-- Modify: `docs/arquitetura.md`
+**Arquivos:**
+- Modificar: `docs/arquitetura.md`
 
-- [ ] **Step 1: Escrever a seção, referenciando o README de third-party**
+- [ ] **Passo 1: Escrever a seção, referenciando o README de third-party**
 
 ```markdown
 ## 5. Integrações externas
@@ -368,12 +368,12 @@ o formato esperado. A vantagem é que o código fica curto; o custo é que uma m
 formato em qualquer das três APIs só se manifesta como erro quando a requisição roda.
 ```
 
-- [ ] **Step 2: Verificar o link relativo**
+- [ ] **Passo 2: Verificar o link relativo**
 
-Run: `test -f cep-clima/third-party/README.md && echo OK`
-Expected: `OK`
+Executar: `test -f cep-clima/third-party/README.md && echo OK`
+Esperado: `OK`
 
-- [ ] **Step 3: Commit**
+- [ ] **Passo 3: Commit**
 
 ```bash
 git add docs/arquitetura.md
@@ -382,15 +382,15 @@ git commit -m "docs: registra decisoes das integracoes externas"
 
 ---
 
-### Task 7: Seção 6 — Tratamento de erros
+### Tarefa 7: Seção 6 — Tratamento de erros
 
-**Depende da Task 1.** Todos os códigos HTTP desta seção vêm de `docs/superpowers/evidencia-endpoints.md`. Nenhum valor pode ser inferido do código-fonte.
+**Depende da Tarefa 1.** Todos os códigos HTTP desta seção vêm de `docs/superpowers/evidencia-endpoints.md`. Nenhum valor pode ser inferido do código-fonte.
 
-**Files:**
-- Modify: `docs/arquitetura.md`
+**Arquivos:**
+- Modificar: `docs/arquitetura.md`
 - Consultar: `docs/superpowers/evidencia-endpoints.md`
 
-- [ ] **Step 1: Descrever o mecanismo**
+- [ ] **Passo 1: Descrever o mecanismo**
 
 ````markdown
 ## 6. Tratamento de erros
@@ -410,7 +410,7 @@ cada serviço e reempacotadas como `502 Bad Gateway`, o que distingue "o serviç
 falhou" de "o pedido do usuário estava errado".
 ````
 
-- [ ] **Step 2: Montar a tabela com os valores observados**
+- [ ] **Passo 2: Montar a tabela com os valores observados**
 
 Preencher a coluna de status **exclusivamente** com o que consta na evidência:
 
@@ -427,7 +427,7 @@ Verificado com a aplicação em execução:
 | `/mapa/99999999` | … | … |
 ```
 
-- [ ] **Step 3: Registrar as lacunas encontradas**
+- [ ] **Passo 3: Registrar as lacunas encontradas**
 
 Se a evidência mostrar caminho que produz `500` não previsto, documentar assim — factual, sem julgamento:
 
@@ -450,13 +450,13 @@ issues.
 
 Se a evidência **não** confirmar nenhum 500, escrever exatamente isso: que os caminhos foram tentados e não reproduzidos, mantendo a tabela como risco teórico. Não afirmar comportamento não observado.
 
-- [ ] **Step 4: Conferir que nenhum status na seção veio de inferência**
+- [ ] **Passo 4: Conferir que nenhum status na seção veio de inferência**
 
-Run: `grep -nE "\b(400|404|500|502)\b" docs/arquitetura.md`
+Executar: `grep -nE "\b(400|404|500|502)\b" docs/arquitetura.md`
 
 Para cada ocorrência, confirmar linha correspondente na evidência. Sem correspondência, remover ou marcar como não verificado.
 
-- [ ] **Step 5: Commit**
+- [ ] **Passo 5: Commit**
 
 ```bash
 git add docs/arquitetura.md
@@ -465,12 +465,12 @@ git commit -m "docs: documenta o modelo de erros verificado"
 
 ---
 
-### Task 8: Seção 7 — Build e execução
+### Tarefa 8: Seção 7 — Build e execução
 
-**Files:**
-- Modify: `docs/arquitetura.md`
+**Arquivos:**
+- Modificar: `docs/arquitetura.md`
 
-- [ ] **Step 1: Descrever o build multi-stage**
+- [ ] **Passo 1: Descrever o build multi-stage**
 
 ```markdown
 ## 7. Build e execução
@@ -495,7 +495,7 @@ estiver em `static/`. Como as duas cópias podem divergir, os dois modos de exec
 apresentar telas diferentes — e hoje divergem.
 ```
 
-- [ ] **Step 2: Registrar o impedimento do build**
+- [ ] **Passo 2: Registrar o impedimento do build**
 
 ````markdown
 ### Estado atual do build a partir de um clone limpo
@@ -518,7 +518,7 @@ Versionar `backend/.mvn/wrapper/maven-wrapper.properties` resolve os dois casos.
 como issue.
 ````
 
-- [ ] **Step 3: Commit**
+- [ ] **Passo 3: Commit**
 
 ```bash
 git add docs/arquitetura.md
@@ -527,12 +527,12 @@ git commit -m "docs: descreve o build e o impedimento em clone limpo"
 
 ---
 
-### Task 9: Seção 8 — Limitações conhecidas
+### Tarefa 9: Seção 8 — Limitações conhecidas
 
-**Files:**
-- Modify: `docs/arquitetura.md`
+**Arquivos:**
+- Modificar: `docs/arquitetura.md`
 
-- [ ] **Step 1: Escrever a seção de fechamento**
+- [ ] **Passo 1: Escrever a seção de fechamento**
 
 ```markdown
 ## 8. Limitações conhecidas
@@ -555,7 +555,7 @@ consequências conhecidas do escopo acadêmico.
 [README do projeto](../cep-clima/README.md) · [README do repositório](../README.md) · [Faculdade ESUDA](https://esuda.edu.br)
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Passo 2: Commit**
 
 ```bash
 git add docs/arquitetura.md
@@ -564,13 +564,13 @@ git commit -m "docs: registra limitacoes conhecidas"
 
 ---
 
-### Task 10: Revisão final e preparação do PR
+### Tarefa 10: Revisão final e preparação do PR
 
-**Files:**
-- Modify: `docs/arquitetura.md`
-- Delete: `docs/superpowers/` (artefatos de processo)
+**Arquivos:**
+- Modificar: `docs/arquitetura.md`
+- Remover: `docs/superpowers/` (artefatos de processo)
 
-- [ ] **Step 1: Verificar todos os links relativos**
+- [ ] **Passo 1: Verificar todos os links relativos**
 
 ```bash
 grep -oE '\]\(([^)#]+)\)' docs/arquitetura.md \
@@ -582,31 +582,29 @@ grep -oE '\]\(([^)#]+)\)' docs/arquitetura.md \
       if [ -e "$target" ]; then echo "OK   $link"; else echo "QUEBRADO $link"; fi
     done
 ```
-Expected: nenhuma linha `QUEBRADO`.
+Esperado: nenhuma linha `QUEBRADO`.
 
-O filtro `grep -v '<nome>'` exclui o modelo de link que vive dentro do bloco comentado da
-Task 3 — ele é gabarito para o draw.io futuro, não um link real. Quando o diagrama chegar
-e o bloco for ativado, remova o filtro e rode de novo.
+O filtro `grep -v '<nome>'` exclui o modelo de link que vive dentro do bloco comentado da Tarefa 3 — ele é gabarito para o draw.io futuro, não um link real. Quando o diagrama chegar e o bloco for ativado, remova o filtro e rode de novo.
 
-- [ ] **Step 2: Varredura de placeholders**
+- [ ] **Passo 2: Varredura de placeholders**
 
-Run: `grep -nEi "TBD|TODO|FIXME|XXX|preencher|\.\.\." docs/arquitetura.md`
-Expected: nenhum resultado — exceto o marcador `<!-- DIAGRAMA -->` da Task 3, que é intencional e continua válido enquanto o draw.io não chegar.
+Executar: `grep -nEi "TBD|TODO|FIXME|XXX|preencher|\.\.\." docs/arquitetura.md`
+Esperado: nenhum resultado — exceto o marcador `<!-- DIAGRAMA -->` da Tarefa 3, que é intencional e continua válido enquanto o draw.io não chegar.
 
-- [ ] **Step 3: Conferir consistência de nomes**
+- [ ] **Passo 3: Conferir consistência de nomes**
 
-Run: `grep -oE "[A-Z][a-zA-Z]+(Service|Controller|Config|Handler|Application)" docs/arquitetura.md | sort -u`
+Executar: `grep -oE "[A-Z][a-zA-Z]+(Service|Controller|Config|Handler|Application)" docs/arquitetura.md | sort -u`
 
-Expected: exatamente as sete classes reais. Qualquer nome fora dessa lista é erro de digitação.
+Esperado: exatamente as sete classes reais. Qualquer nome fora dessa lista é erro de digitação.
 
-- [ ] **Step 4: Conferir o documento contra a spec**
+- [ ] **Passo 4: Conferir o documento contra a especificação**
 
 Abrir `docs/superpowers/specs/2026-08-14-documentacao-tecnica-arquitetura-design.md` e confirmar que as oito seções previstas existem e que nada fora do escopo entrou (sem OpenAPI, sem ADR, sem alteração de código).
 
-Run: `git diff --stat main...HEAD -- . ':!docs/superpowers'`
-Expected: apenas `docs/arquitetura.md`.
+Executar: `git diff --stat main...HEAD -- . ':!docs/superpowers'`
+Esperado: apenas `docs/arquitetura.md`.
 
-- [ ] **Step 5: Remover os artefatos de processo**
+- [ ] **Passo 5: Remover os artefatos de processo**
 
 ```bash
 git rm -r --cached docs/superpowers
@@ -614,16 +612,16 @@ rm -rf docs/superpowers
 git commit -m "chore: remove artefatos de processo do branch"
 ```
 
-Spec, plano e evidência não pertencem ao repositório compartilhado. Se quiser preservá-los, copie para fora do repositório **antes** de rodar isto.
+Especificação, plano e evidência não pertencem ao repositório compartilhado. Se quiser preservá-los, copie para fora do repositório **antes** de rodar isto.
 
-- [ ] **Step 6: Confirmar que nenhum arquivo de código foi tocado**
+- [ ] **Passo 6: Confirmar que nenhum arquivo de código foi tocado**
 
-Run: `git diff --name-only main...HEAD`
-Expected: apenas `docs/arquitetura.md`.
+Executar: `git diff --name-only main...HEAD`
+Esperado: apenas `docs/arquitetura.md`.
 
 Este é o critério de aceite do PR: um arquivo, zero alterações em código.
 
-- [ ] **Step 7: Push e abertura do PR**
+- [ ] **Passo 7: Push e abertura do PR**
 
 ```bash
 git push -u origin docs/arquitetura-tecnica
@@ -638,5 +636,5 @@ Depois conferir no GitHub: o Mermaid precisa aparecer **desenhado**, não como b
 | Item | Encaminhamento |
 |------|----------------|
 | Diagrama draw.io | Autor adiciona a `docs/`; a seção 2 é preenchida então |
-| 11 achados da review | Issues separadas — ver seção 6 da spec |
+| 11 achados da review | Issues separadas — ver seção 6 da especificação |
 | Especificação OpenAPI | Fora do escopo por decisão; reavaliar depois |

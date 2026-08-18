@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Consulte um CEP brasileiro e veja o endereço, localização no mapa e a temperatura máxima prevista para o dia. Projeto acadêmico da Faculdade ESUDA — Recife, PE.">
+  <meta name="robots" content="index, follow">
   <title>CEP + Clima | Faculdade ESUDA</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -392,7 +394,9 @@
         leafletMap.removeLayer(leafletMarker);
       }
 
-      leafletMarker = L.marker([latitude, longitude]).addTo(leafletMap);
+      leafletMarker = L.marker([latitude, longitude])
+        .bindPopup('<b>' + cityName + '</b>')
+        .addTo(leafletMap);
 
       setTimeout(() => leafletMap.invalidateSize(), 80);
     }

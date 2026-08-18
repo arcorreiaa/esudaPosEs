@@ -1,9 +1,10 @@
 package br.edu.esuda.cepclima.service;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -11,24 +12,29 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
+import br.edu.esuda.cepclima.dto.ClimaDto;
+import br.edu.esuda.cepclima.dto.ClimaResponse;
+import br.edu.esuda.cepclima.dto.MapaResponse;
+
 @Service
 public class ClimaService {
+
+	private static final Logger log = LoggerFactory.getLogger(ClimaService.class);
 
 	private final RestClient restClient;
 	private final MapaService mapaService;
 
-	public ClimaService(MapaService mapaService) {
-		this.restClient = RestClient.create();
+	public ClimaService(MapaService mapaService, RestClient.Builder restClientBuilder) {
+		this.restClient = restClientBuilder.build();
 		this.mapaService = mapaService;
 	}
 
-	public Map<String, Object> buscarClimaPorCep(String cep) {
+	public ClimaResponse buscarClimaPorCep(String cep) {
 		try {
-			Map<String, Object> mapa = mapaService.buscarMapaPorCep(cep);
-			Map<String, Object> coordenadas = (Map<String, Object>) mapa.get("coordenadas");
+			MapaResponse mapa = mapaService.buscarMapaPorCep(cep);
 
-			double latitude = ((Number) coordenadas.get("latitude")).doubleValue();
-			double longitude = ((Number) coordenadas.get("longitude")).doubleValue();
+			double latitude = mapa.coordenadas().latitude();
+			double longitude = mapa.coordenadas().longitude();
 
 			Map<String, Object> forecast = restClient.get()
 					.uri(uriBuilder -> uriBuilder
@@ -48,21 +54,20 @@ public class ClimaService {
 			List<String> datas = (List<String>) daily.get("time");
 			List<Number> temperaturas = (List<Number>) daily.get("temperature_2m_max");
 
-			Map<String, Object> clima = new LinkedHashMap<>();
-			clima.put("data", datas.get(0));
-			clima.put("temperatura_maxima_celsius", temperaturas.get(0).doubleValue());
+			ClimaDto clima = new ClimaDto(datas.get(0), temperaturas.get(0).doubleValue());
 
-			Map<String, Object> resposta = new LinkedHashMap<>(mapa);
-			resposta.put("clima", clima);
+			log.info("Clima consultado para CEP {}: {} °C em {}", cep, clima.temperaturaMaximaCelsius(), clima.data());
 
-			return resposta;
+			return new ClimaResponse(mapa.cep(), mapa.endereco(), mapa.coordenadas(), clima);
 		} catch (ResponseStatusException ex) {
 			throw ex;
 		} catch (RestClientException ex) {
+			log.error("Erro ao consultar API de clima para CEP: {}", cep, ex);
 			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro ao consultar API de clima");
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private Map<String, Object> extrairDaily(Map<String, Object> forecast) {
 		if (forecast == null || forecast.get("daily") == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro ao consultar API de clima");

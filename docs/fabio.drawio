@@ -1,0 +1,263 @@
+<mxfile host="app.diagrams.net" modified="2026-08-18T22:30:00.000Z" agent="Antigravity" version="24.0.0" type="device">
+  <diagram id="fabio-diag-1" name="1. Visão Geral e Arquitetura">
+    <mxGraphModel dx="1680" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Título do Diagrama -->
+        <mxCell id="title-box" value="&lt;b&gt;&lt;font style=&quot;font-size: 22px;&quot;&gt;Arquitetura CEP + Clima (Melhorias - Fabio Emidio)&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 13px; color: #555555;&quot;&gt;Faculdade ESUDA • Spring Boot 4.1 • Java 17 • Records DTOs • RestClient Timeout • Actuator Health Check&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#d6d8db;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1520" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Container Usuário & Navegador -->
+        <mxCell id="group-client" value="CLIENTE / NAVEGADOR" style="swimlane;whiteSpace=wrap;html=1;fillColor=#E8F4F8;strokeColor=#007ACC;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="140" width="340" height="690" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user-node" value="&lt;b&gt;Usuário Final&lt;/b&gt;&lt;br&gt;Navegador Web / Mobile" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#007ACC;strokeColor=#005999;fontColor=#333333;" vertex="1" parent="group-client">
+          <mxGeometry x="145" y="60" width="50" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fe-node" value="&lt;b&gt;Frontend (SPA Estática)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;• index.html (HTML5 + CSS + Vanilla JS)&lt;br&gt;• Leaflet JS (Mapa com Popup da Cidade)&lt;br&gt;• Meta SEO (Description, Robots)&lt;br&gt;• Máscara de CEP e Feedback Visual&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#007ACC;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="group-client">
+          <mxGeometry x="25" y="210" width="290" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="docker-note" value="&lt;b&gt;Docker Health Check&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;docker-compose.yaml verifica status a cada 30s via /actuator/health&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FFF9C4;strokeColor=#FBC02D;fontSize=12;size=14;" vertex="1" parent="group-client">
+          <mxGeometry x="25" y="440" width="290" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Container Backend Spring Boot -->
+        <mxCell id="group-backend" value="BACKEND SPRING BOOT (api-cep-clima : 8080)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#EBF5FB;strokeColor=#2E86C1;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="420" y="140" width="760" height="690" as="geometry" />
+        </mxCell>
+
+        <!-- Configs & Actuator -->
+        <mxCell id="be-webconfig" value="&lt;b&gt;WebConfig (CORS)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px; color:#555;&quot;&gt;Habilitado para /clima/** e /mapa/**&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2E86C1;fontSize=11;" vertex="1" parent="group-backend">
+          <mxGeometry x="30" y="50" width="210" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="be-restconfig" value="&lt;b&gt;RestClientConfig (Bean)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px; color:#2E7D32;&quot;&gt;• Connect Timeout: 5s&lt;br&gt;• Read Timeout: 10s&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F8F5;strokeColor=#27AE60;fontSize=11;" vertex="1" parent="group-backend">
+          <mxGeometry x="270" y="50" width="220" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="be-actuator" value="&lt;b&gt;Spring Actuator&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px; color:#555;&quot;&gt;GET /actuator/health (Status UP)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2E86C1;fontSize=11;" vertex="1" parent="group-backend">
+          <mxGeometry x="520" y="50" width="210" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Controllers -->
+        <mxCell id="be-clima-ctrl" value="&lt;b&gt;ClimaController&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;GET /clima/{cep}&lt;br&gt;Retorno: &lt;b&gt;ClimaResponse&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4EFDF;strokeColor=#27AE60;fontSize=12;" vertex="1" parent="group-backend">
+          <mxGeometry x="30" y="140" width="330" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="be-mapa-ctrl" value="&lt;b&gt;MapaController&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;GET /mapa/{cep}&lt;br&gt;Retorno: &lt;b&gt;MapaResponse&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4EFDF;strokeColor=#27AE60;fontSize=12;" vertex="1" parent="group-backend">
+          <mxGeometry x="400" y="140" width="330" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Services -->
+        <mxCell id="be-clima-srv" value="&lt;b&gt;ClimaService&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;• Injeta MapaService e RestClient&lt;br&gt;• Orquestra chamada à API Open-Meteo&lt;br&gt;• Monta ClimaResponse com ClimaDto&lt;br&gt;• Logging SLF4J estruturado&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2E86C1;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="group-backend">
+          <mxGeometry x="30" y="250" width="330" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="be-mapa-srv" value="&lt;b&gt;MapaService&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;• Valida formato do CEP (com/sem hífen)&lt;br&gt;• Consulta ViaCEP (endereço)&lt;br&gt;• Consulta Nominatim (coordenadas)&lt;br&gt;• Monta MapaResponse (Record DTO)&lt;br&gt;• Logging SLF4J estruturado&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2E86C1;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="group-backend">
+          <mxGeometry x="400" y="250" width="330" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- DTO Layer -->
+        <mxCell id="be-dtos" value="&lt;b&gt;Camada DTO (Java Records — Imutáveis &amp; Type-Safe)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;• &lt;b&gt;EnderecoDto&lt;/b&gt; (logradouro, bairro, localidade, uf)&lt;br&gt;• &lt;b&gt;CoordenadasDto&lt;/b&gt; (latitude, longitude, nome)&lt;br&gt;• &lt;b&gt;ClimaDto&lt;/b&gt; (data, @JsonProperty temperatura_maxima_celsius)&lt;br&gt;• &lt;b&gt;MapaResponse&lt;/b&gt; (cep, endereco, coordenadas)&lt;br&gt;• &lt;b&gt;ClimaResponse&lt;/b&gt; (cep, endereco, coordenadas, clima)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF9E7;strokeColor=#F39C12;align=left;spacingLeft=15;fontSize=12;" vertex="1" parent="group-backend">
+          <mxGeometry x="30" y="390" width="700" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Exception Handler -->
+        <mxCell id="be-ex-handler" value="&lt;b&gt;ApiExceptionHandler (@RestControllerAdvice)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Captura ResponseStatusException e padroniza resposta JSON de erro: { &quot;message&quot;: &quot;...&quot; }&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEDEC;strokeColor=#E74C3C;fontSize=11;" vertex="1" parent="group-backend">
+          <mxGeometry x="30" y="540" width="700" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="be-tests" value="&lt;b&gt;Testes Automatizados (JUnit 5)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;MapaServiceTest: 9 testes unitários parametrizados para validação de CEP.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAFAF1;strokeColor=#2ECC71;fontSize=11;" vertex="1" parent="group-backend">
+          <mxGeometry x="30" y="610" width="700" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Container APIs Externas -->
+        <mxCell id="group-external" value="APIS EXTERNAS (SERVIÇOS PÚBLICOS)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#F4F6F6;strokeColor=#7F8C8D;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="140" width="340" height="690" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext-viacep" value="&lt;b&gt;ViaCEP API&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;https://viacep.com.br/ws/{cep}/json/&lt;br&gt;&lt;i&gt;Retorna: logradouro, bairro, cidade, UF&lt;/i&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7F8C8D;fontSize=12;" vertex="1" parent="group-external">
+          <mxGeometry x="25" y="70" width="290" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext-nominatim" value="&lt;b&gt;OpenStreetMap Nominatim&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;https://nominatim.openstreetmap.org/search&lt;br&gt;&lt;i&gt;Retorna: latitude, longitude, display_name&lt;/i&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7F8C8D;fontSize=12;" vertex="1" parent="group-external">
+          <mxGeometry x="25" y="240" width="290" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext-openmeteo" value="&lt;b&gt;Open-Meteo Forecast API&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;https://api.open-meteo.com/v1/forecast&lt;br&gt;&lt;i&gt;Retorna: temperatura máxima do dia&lt;/i&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7F8C8D;fontSize=12;" vertex="1" parent="group-external">
+          <mxGeometry x="25" y="410" width="290" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Conexões / Fluxos -->
+        <mxCell id="conn-user-fe" edge="1" parent="1" source="user-node" target="fe-node" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#007ACC;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn-fe-clima" value="fetch('/clima/{cep}')" edge="1" parent="1" source="fe-node" target="be-clima-ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#27AE60;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn-ctrl-srv-clima" edge="1" parent="1" source="be-clima-ctrl" target="be-clima-srv" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2E86C1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn-ctrl-srv-mapa" edge="1" parent="1" source="be-mapa-ctrl" target="be-mapa-srv" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2E86C1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn-clima-mapasrv" value="1. Busca Endereço &amp; Coords" edge="1" parent="1" source="be-clima-srv" target="be-mapa-srv" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2E86C1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn-mapa-viacep" value="1.1 Consulta CEP" edge="1" parent="1" source="be-mapa-srv" target="ext-viacep" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#7F8C8D;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn-mapa-nominatim" value="1.2 Geocoding" edge="1" parent="1" source="be-mapa-srv" target="ext-nominatim" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#7F8C8D;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn-clima-openmeteo" value="2. Consulta Previsão (lat, lon)" edge="1" parent="1" source="be-clima-srv" target="ext-openmeteo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#7F8C8D;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="615" y="595" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+  
+  <diagram id="fabio-diag-2" name="2. Fluxo Sequencial de Requisição">
+    <mxGraphModel dx="1680" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <mxCell id="seq-title" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Fluxo Sequencial de Consulta de Clima (/clima/{cep})&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#d6d8db;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1520" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Atores / Lifelines -->
+        <mxCell id="ll-user" value="Usuário / Frontend" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#E8F4F8;strokeColor=#007ACC;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="110" width="140" height="680" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ll-ctrl" value="ClimaController" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#D4EFDF;strokeColor=#27AE60;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="110" width="140" height="680" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ll-climasrv" value="ClimaService" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#EBF5FB;strokeColor=#2E86C1;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="110" width="140" height="680" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ll-mapasrv" value="MapaService" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#EBF5FB;strokeColor=#2E86C1;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="110" width="140" height="680" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ll-viacep" value="ViaCEP" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#F4F6F6;strokeColor=#7F8C8D;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="110" width="120" height="680" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ll-nominatim" value="Nominatim" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#F4F6F6;strokeColor=#7F8C8D;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="110" width="120" height="680" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ll-openmeteo" value="Open-Meteo" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#F4F6F6;strokeColor=#7F8C8D;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="110" width="120" height="680" as="geometry" />
+        </mxCell>
+
+        <!-- Mensagens de Sequência -->
+        <mxCell id="msg1" value="1. Digita CEP e submete formulário" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;strokeWidth=2;strokeColor=#007ACC;" edge="1" parent="1" source="ll-user" target="ll-ctrl">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="190" as="offset" />
+            <Array as="points"><mxPoint x="230" y="190" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg2" value="2. buscarClimaPorCep(cep)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;strokeWidth=2;strokeColor=#27AE60;" edge="1" parent="1" source="ll-ctrl" target="ll-climasrv">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="470" y="230" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg3" value="3. buscarMapaPorCep(cep)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;strokeWidth=2;strokeColor=#2E86C1;" edge="1" parent="1" source="ll-climasrv" target="ll-mapasrv">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="710" y="270" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg4" value="4. GET /ws/{cep}/json/ (Timeout 5s/10s)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;strokeWidth=2;strokeColor=#7F8C8D;" edge="1" parent="1" source="ll-mapasrv" target="ll-viacep">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="950" y="310" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg5" value="5. Retorna dados de endereço" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1" source="ll-viacep" target="ll-mapasrv">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="950" y="350" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg6" value="6. GET /search?q={endereco} (Geocoding)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;strokeWidth=2;strokeColor=#7F8C8D;" edge="1" parent="1" source="ll-mapasrv" target="ll-nominatim">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1050" y="390" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg7" value="7. Retorna lat, lon e display_name" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1" source="ll-nominatim" target="ll-mapasrv">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1050" y="430" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg8" value="8. Retorna MapaResponse (Record DTO)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;strokeColor=#2E86C1;fontStyle=1;" edge="1" parent="1" source="ll-mapasrv" target="ll-climasrv">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="710" y="470" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg9" value="9. GET /v1/forecast?lat={lat}&amp;lon={lon}&amp;daily=temperature_2m_max" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;strokeWidth=2;strokeColor=#7F8C8D;" edge="1" parent="1" source="ll-climasrv" target="ll-openmeteo">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1000" y="520" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg10" value="10. Retorna previsão diária" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1" source="ll-openmeteo" target="ll-climasrv">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1000" y="560" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg11" value="11. Retorna ClimaResponse (Record DTO)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;strokeColor=#27AE60;fontStyle=1;" edge="1" parent="1" source="ll-climasrv" target="ll-ctrl">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="470" y="610" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg12" value="12. JSON 200 OK (ClimaResponse)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;strokeColor=#007ACC;fontStyle=1;" edge="1" parent="1" source="ll-ctrl" target="ll-user">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="230" y="660" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="msg13" value="13. Renderiza Card de Temperatura e Mapa com Popup da Cidade" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;strokeColor=#007ACC;" edge="1" parent="1" source="ll-user" target="ll-user">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="700" />
+              <mxPoint x="200" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

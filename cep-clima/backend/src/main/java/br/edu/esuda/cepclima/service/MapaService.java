@@ -1,9 +1,10 @@
 package br.edu.esuda.cepclima.service;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -11,16 +12,22 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
+import br.edu.esuda.cepclima.dto.CoordenadasDto;
+import br.edu.esuda.cepclima.dto.EnderecoDto;
+import br.edu.esuda.cepclima.dto.MapaResponse;
+
 @Service
 public class MapaService {
 
+	private static final Logger log = LoggerFactory.getLogger(MapaService.class);
+
 	private final RestClient restClient;
 
-	public MapaService() {
-		this.restClient = RestClient.create();
+	public MapaService(RestClient.Builder restClientBuilder) {
+		this.restClient = restClientBuilder.build();
 	}
 
-	public Map<String, Object> buscarMapaPorCep(String cep) {
+	public MapaResponse buscarMapaPorCep(String cep) {
 		Map<String, Object> viaCep = buscarEnderecoPorCep(cep);
 
 		String logradouro = textoOuVazio(viaCep.get("logradouro"));
@@ -50,7 +57,8 @@ public class MapaService {
 					.retrieve()
 					.body(new ParameterizedTypeReference<List<Map<String, Object>>>() {});
 
-			if (resultados.isEmpty()) {
+			if (resultados == null || resultados.isEmpty()) {
+				log.warn("Localidade não encontrada no Nominatim para CEP: {}", cep);
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Localidade não encontrada");
 			}
 
@@ -59,26 +67,16 @@ public class MapaService {
 			double longitude = Double.parseDouble(local.get("lon").toString());
 			String nome = textoOuVazio(local.get("display_name"));
 
-			Map<String, Object> endereco = new LinkedHashMap<>();
-			endereco.put("logradouro", viaCep.get("logradouro"));
-			endereco.put("bairro", viaCep.get("bairro"));
-			endereco.put("localidade", localidade);
-			endereco.put("uf", uf);
+			EnderecoDto endereco = new EnderecoDto(logradouro, bairro, localidade, uf);
+			CoordenadasDto coordenadas = new CoordenadasDto(latitude, longitude, nome);
 
-			Map<String, Object> coordenadas = new LinkedHashMap<>();
-			coordenadas.put("latitude", latitude);
-			coordenadas.put("longitude", longitude);
-			coordenadas.put("nome", nome);
+			log.info("CEP {} localizado: {}, {} (lat={}, lon={})", cep, localidade, uf, latitude, longitude);
 
-			Map<String, Object> resposta = new LinkedHashMap<>();
-			resposta.put("cep", viaCep.get("cep"));
-			resposta.put("endereco", endereco);
-			resposta.put("coordenadas", coordenadas);
-
-			return resposta;
+			return new MapaResponse(cepFormatado, endereco, coordenadas);
 		} catch (ResponseStatusException ex) {
 			throw ex;
 		} catch (RestClientException ex) {
+			log.error("Erro ao consultar Nominatim para CEP: {}", cep, ex);
 			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro ao consultar API de mapa");
 		}
 	}
@@ -93,6 +91,7 @@ public class MapaService {
 					.body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
 			if (viaCep == null || Boolean.TRUE.equals(viaCep.get("erro"))) {
+				log.warn("CEP não encontrado no ViaCEP: {}", cepLimpo);
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CEP não encontrado");
 			}
 
@@ -100,6 +99,7 @@ public class MapaService {
 		} catch (ResponseStatusException ex) {
 			throw ex;
 		} catch (RestClientException ex) {
+			log.error("Erro ao consultar ViaCEP para CEP: {}", cepLimpo, ex);
 			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro ao consultar API do ViaCEP");
 		}
 	}

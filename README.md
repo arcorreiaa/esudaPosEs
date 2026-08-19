@@ -91,6 +91,51 @@ esudaPosEs/
 
 ---
 
+## Contribuições por integrante
+
+Resumo técnico do que cada membro entregou no repositório, para conferência na revisão do trabalho.
+
+### Alysson Rychard
+
+Estrutura inicial do repositório e implementação base do projeto **CEP + Clima**.
+
+- Criou o backend Spring Boot (`CepClimaApplication`, `ClimaController`, `ClimaService`, `ApiExceptionHandler`, `WebConfig`) com integração às APIs ViaCEP, Nominatim e Open-Meteo.
+- Desenvolveu o frontend (`index.html` com CSS, JavaScript e mapa Leaflet) e a documentação das APIs externas em `cep-clima/third-party/`.
+- Configurou Docker (`Dockerfile` multi-estágio, `docker-compose.yaml`) e Maven Wrapper.
+- Refatorou a arquitetura para servir API e interface no mesmo JAR Spring Boot, eliminando o contêiner nginx separado.
+- Organizou o repositório com o exemplo `api/demospring01`, o laboratório `docs/Laboratorio-RaceCondition` e o diagrama `docs/Alysson.drawio`.
+
+### Eduardo Serra
+
+Refatoração do backend e laboratório de concorrência.
+
+- Extraiu `MapaService` de `ClimaService`, concentrando validação de CEP, consulta ao ViaCEP e geocodificação via Nominatim.
+- Criou `MapaController` com o endpoint `GET /mapa/{cep}` e adaptou `ClimaService` para reutilizar `MapaService`.
+- Melhorou o frontend (validação de CEP e exibição do mapa) em `frontend/index.html` e `static/index.html`.
+- Implementou o laboratório de race condition (`docs/Eduardo_Race_Condition/contador/ContadorThreads.java`) demonstrando incremento concorrente com e sem `synchronized`.
+- Produziu o diagrama de arquitetura `docs/eduardo_cadiz_cepclima.drawio`.
+
+### Luis Felipe
+
+Documentação de arquitetura e testes automatizados.
+
+- Escreveu `docs/arquitetura.md` — documento técnico com visão geral, componentes, fluxo de requisição, integrações externas, tratamento de erros, build Docker e limitações conhecidas.
+- Criou quatro diagramas draw.io exportados em PNG: contexto, componentes, fluxo `GET /clima/{cep}` e pipeline de build (`docs/Felipe.drawio`).
+- Adicionou testes unitários de validação de CEP em `MapaServiceTest` (formatos válidos e inválidos).
+- Configurou Maven Wrapper (`.mvn/wrapper/maven-wrapper.properties`) e alinhou validação de CEP entre frontend e backend.
+
+### Fabio Emidio
+
+Tipagem, resiliência e observabilidade do backend.
+
+- Substituiu `Map<String, Object>` por cinco Java Records (`EnderecoDto`, `CoordenadasDto`, `ClimaDto`, `MapaResponse`, `ClimaResponse`), garantindo type-safety nas respostas da API.
+- Criou `RestClientConfig` com timeouts centralizados (5 s conexão, 10 s leitura) e injetou `RestClient.Builder` nos serviços.
+- Habilitou CORS para `/mapa/**`, adicionou logging SLF4J nos serviços e integrou Spring Boot Actuator com health check no `docker-compose.yaml`.
+- Melhorou o frontend com meta tags SEO e popup no marker do Leaflet.
+- Documentou as alterações em `docs/mudanca-fabio.md` e diagrama `docs/fabio.drawio`.
+
+---
+
 ## Licença
 
 Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE).

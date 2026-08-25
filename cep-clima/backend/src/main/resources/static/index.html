@@ -433,7 +433,7 @@
         const temp = data.clima.temperatura_maxima_celsius;
         document.getElementById('temp').innerHTML = temp.toFixed(1) + '<span>°C</span>';
         document.getElementById('city').textContent = data.endereco.localidade + ', ' + data.endereco.uf;
-        document.getElementById('cepResult').textContent = 'CEP ' + data.cep + ' · temperatura máxima hoje';
+        document.getElementById('cepResult').textContent = 'Temperatura máxima prevista na localidade.';
         document.getElementById('endereco').textContent = data.endereco.logradouro;
         document.getElementById('bairro').textContent = data.endereco.bairro;
         document.getElementById('uf').textContent = data.endereco.uf;

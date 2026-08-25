@@ -1,0 +1,7 @@
+# O contexto de build e a pasta cep-clima/ (ver docker-compose.yaml),
+# por isso os caminhos sao relativos a ela.
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+**/*.class
+**/*.log
+**/.DS_Store

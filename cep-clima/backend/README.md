@@ -50,36 +50,24 @@ backend/src/main/java/br/edu/esuda/cepclima/
 - `spring-boot-starter-webmvc`
 - Java 17
 
-## Problema conhecido
+## Interface web
 
-Ao executar o Docker, pode ocorrer o erro abaixo durante o build:
+A página servida em `http://localhost:8080` fica em `src/main/resources/static/index.html`. É a única cópia, então edite ela diretamente. Ver [../frontend/README.md](../frontend/README.md).
 
-```text
-=> ERROR [api-cep-clima build 4/8] COPY backend/.mvn .mvn         0.0s
-------
- > [api-cep-clima build 4/8] COPY backend/.mvn .mvn:
-------
-failed to solve: failed to compute cache key: failed to calculate checksum of ref ...: "/backend/.mvn": not found
-```
+## Problemas conhecidos
 
-Esse erro acontece quando a pasta `.mvn` (usada pelo Maven Wrapper) não existe dentro de `backend`.
+O catálogo completo de erros já enfrentados no projeto, com sintoma, causa e solução, está em [docs/problemas-conhecidos.md](../../docs/problemas-conhecidos.md).
 
-### Como resolver
+Os que mais aparecem ao rodar o backend:
 
-1. Entre na pasta `backend`.
-2. Execute o comando abaixo para gerar os arquivos do Maven Wrapper:
+| Erro | Onde está documentado |
+|------|-----------------------|
+| `Cannot start maven from wrapper` | [item 1.2](../../docs/problemas-conhecidos.md#12-o-maven-wrapper-não-inicia) |
+| `port is already allocated` na 8080 | [item 1.3](../../docs/problemas-conhecidos.md#13-a-porta-8080-já-está-em-uso) |
+| `Permission denied` no `mvnw` | [item 1.4](../../docs/problemas-conhecidos.md#14-permissão-negada-ao-executar-o-mvnw) |
+| A página abre mas não retorna dados | [item 1.5](../../docs/problemas-conhecidos.md#15-a-página-abre-mas-não-retorna-dados) |
 
-```bash
-mvn wrapper:wrapper
-```
-
-3. Após a geração da pasta `.mvn` e dos arquivos `mvnw`/`mvnw.cmd` (se necessário), rode novamente:
-
-```bash
-docker compose up --build
-```
-
-Com isso, a etapa `COPY backend/.mvn .mvn` do Dockerfile passa a encontrar os arquivos esperados e o build deve seguir normalmente.
+Se você resolver um problema que ainda não está lá, registre no catálogo em vez de deixar a solução só no histórico do WhatsApp.
 
 ## Testes
 

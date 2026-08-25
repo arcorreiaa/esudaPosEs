@@ -13,11 +13,11 @@ Foram criados **5 Java Records** no pacote `br.edu.esuda.cepclima.dto` para subs
 
 | Record | Campos | Usado por |
 |--------|--------|-----------|
-| [EnderecoDto](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/EnderecoDto.java) | `logradouro`, `bairro`, `localidade`, `uf` | MapaService, ClimaService |
-| [CoordenadasDto](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/CoordenadasDto.java) | `latitude`, `longitude`, `nome` | MapaService, ClimaService |
-| [ClimaDto](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/ClimaDto.java) | `data`, `temperaturaMaximaCelsius` | ClimaService |
-| [MapaResponse](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/MapaResponse.java) | `cep`, `endereco`, `coordenadas` | MapaController |
-| [ClimaResponse](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/ClimaResponse.java) | `cep`, `endereco`, `coordenadas`, `clima` | ClimaController |
+| [EnderecoDto](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/EnderecoDto.java) | `logradouro`, `bairro`, `localidade`, `uf` | MapaService, ClimaService |
+| [CoordenadasDto](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/CoordenadasDto.java) | `latitude`, `longitude`, `nome` | MapaService, ClimaService |
+| [ClimaDto](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/ClimaDto.java) | `data`, `temperaturaMaximaCelsius` | ClimaService |
+| [MapaResponse](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/MapaResponse.java) | `cep`, `endereco`, `coordenadas` | MapaController |
+| [ClimaResponse](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/ClimaResponse.java) | `cep`, `endereco`, `coordenadas`, `clima` | ClimaController |
 
 ### Por que foi feito
 
@@ -49,7 +49,7 @@ double longitude = mapa.coordenadas().longitude();  // type-safe
 
 ### Compatibilidade com o Frontend
 
-O [ClimaDto](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/ClimaDto.java) usa a anotação `@JsonProperty("temperatura_maxima_celsius")` para manter o nome `snake_case` no JSON de saída, garantindo que o frontend não precise ser alterado:
+O [ClimaDto](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/dto/ClimaDto.java) usa a anotação `@JsonProperty("temperatura_maxima_celsius")` para manter o nome `snake_case` no JSON de saída, garantindo que o frontend não precise ser alterado:
 
 ```java
 public record ClimaDto(
@@ -73,7 +73,7 @@ O JSON de resposta continua **exatamente o mesmo**:
 ## 2. Correção do CORS
 
 ### O que foi feito
-Adicionada configuração CORS para o endpoint `/mapa/**` em [WebConfig.java](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/config/WebConfig.java).
+Adicionada configuração CORS para o endpoint `/mapa/**` em [WebConfig.java](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/config/WebConfig.java).
 
 ### Por que foi feito
 
@@ -99,7 +99,7 @@ Ambos os endpoints ficam acessíveis via cross-origin.
 ## 3. RestClient com Timeouts
 
 ### O que foi feito
-Criado [RestClientConfig.java](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/config/RestClientConfig.java) — um `@Bean` que configura o `RestClient.Builder` com timeouts de **5 segundos** para conexão e **10 segundos** para leitura.
+Criado [RestClientConfig.java](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/config/RestClientConfig.java) — um `@Bean` que configura o `RestClient.Builder` com timeouts de **5 segundos** para conexão e **10 segundos** para leitura.
 
 ### Por que foi feito
 
@@ -140,7 +140,7 @@ Se uma API externa não responder em 10 segundos, o Spring lança uma exceção 
 ## 4. Logging com SLF4J
 
 ### O que foi feito
-Adicionado logging estruturado em [MapaService.java](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/service/MapaService.java) e [ClimaService.java](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/java/br/edu/esuda/cepclima/service/ClimaService.java) com três níveis:
+Adicionado logging estruturado em [MapaService.java](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/service/MapaService.java) e [ClimaService.java](../cep-clima/backend/src/main/java/br/edu/esuda/cepclima/service/ClimaService.java) com três níveis:
 
 | Nível | Quando | Exemplo |
 |-------|--------|---------|
@@ -169,8 +169,8 @@ java.net.SocketTimeoutException: Read timed out
 ## 5. Spring Boot Actuator + Health Check Docker
 
 ### O que foi feito
-- Adicionada dependência `spring-boot-starter-actuator` no [pom.xml](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/pom.xml)
-- Adicionado health check no [docker-compose.yaml](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/docker-compose.yaml)
+- Adicionada dependência `spring-boot-starter-actuator` no [pom.xml](../cep-clima/backend/pom.xml)
+- Adicionado health check no [docker-compose.yaml](../cep-clima/docker-compose.yaml)
 
 ### Por que foi feito
 
@@ -194,7 +194,7 @@ O Actuator expõe:
 
 ## 6. Melhorias no Frontend (index.html)
 
-### O que foi feito em [index.html](file:///c:/Users/emidio/Desktop/esudaPosEs/cep-clima/backend/src/main/resources/static/index.html):
+### O que foi feito em [index.html](../cep-clima/backend/src/main/resources/static/index.html):
 
 **Meta tags SEO:**
 ```html
@@ -228,7 +228,6 @@ leafletMarker = L.marker([latitude, longitude])
 | **CORS** | Só `/clima/**` | `/clima/**` + `/mapa/**` |
 | **Timeout APIs** | Infinito (trava) | 5s connect + 10s read |
 | **Logging** | Zero — erros silenciosos | Info + Warn + Error com contexto |
-| **Documentação API** | Nenhuma | Swagger UI interativo |
 | **Monitoramento** | Nenhum | Actuator health check |
 | **SEO** | Sem meta tags | Description + robots |
 | **UX mapa** | Marker estático | Popup com nome da cidade |
@@ -239,7 +238,7 @@ leafletMarker = L.marker([latitude, longitude])
 
 ```
 cep-clima/backend/
-├── pom.xml                                    ← +actuator, +springdoc
+├── pom.xml                                    ← +actuator
 └── src/main/java/br/edu/esuda/cepclima/
     ├── config/
     │   ├── RestClientConfig.java              ← NOVO (timeouts)

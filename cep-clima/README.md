@@ -144,11 +144,14 @@ O CEP pode ser enviado com ou sem hífen (8 dígitos).
 
 | Problema | Solução |
 |----------|---------|
+| `failed to connect to the docker API at npipe:...` | O Docker Desktop está fechado. Abra e aguarde *Engine running*, em **Linux containers** |
 | `Cannot connect to the Docker daemon` | Abra o Docker Desktop |
+| `Cannot start maven from wrapper` | Clone desatualizado. Rode `git pull origin main` |
 | `port is already allocated` | Libere a porta 8080 ou execute `docker compose down` |
 | Erro de conexão na página | Execute `docker compose up` dentro de `cep-clima/` |
 | `permission denied` no `mvnw` | `chmod +x backend/mvnw` |
-| Erro no build Docker: `COPY backend/.mvn .mvn` com `"/backend/.mvn": not found` | Execute `mvn wrapper:wrapper` dentro de `backend/` e veja detalhes em [backend/README.md](backend/README.md#problema-conhecido) |
+
+Detalhamento de cada erro, com sintoma completo, causa e passo a passo, em **[docs/problemas-conhecidos.md](../docs/problemas-conhecidos.md)**.
 
 ---
 

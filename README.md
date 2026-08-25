@@ -52,8 +52,8 @@ esudaPosEs/
 ├── api/
 │   └── demospring01/   # Exemplo Spring Boot
 ├── cep-clima/          # Entrega CEP + Clima
-│   ├── backend/        # API Spring Boot e página servida pela aplicação
-│   ├── frontend/       # HTML, CSS, JavaScript e logo
+│   ├── backend/        # API Spring Boot e interface web (src/main/resources/static/)
+│   ├── frontend/       # Documentação da interface web
 │   └── third-party/    # Documentação das APIs externas
 └── docs/               # Diagrama e laboratório de concorrência
 ```
@@ -74,11 +74,16 @@ esudaPosEs/
 
 | Problema | Solução |
 |----------|---------|
+| `failed to connect to the docker API at npipe:...dockerDesktopLinuxEngine` | O Docker Desktop não está rodando. Abra-o, aguarde o status *Engine running* e confirme que está em **Linux containers** |
 | `Cannot connect to the Docker daemon` | Inicie o Docker Desktop e aguarde ficar pronto |
+| `Cannot start maven from wrapper` | Clone desatualizado. Atualize com `git pull origin main` |
 | `port is already allocated` | Porta 8080 em uso — execute `docker compose down` ou libere a porta |
 | Erro de conexão na página | Execute `docker compose up --build` dentro da pasta `cep-clima` |
-| Erro no build: `backend/.mvn` não encontrado | Execute `mvn wrapper:wrapper` dentro de `cep-clima/backend` e tente novamente |
 | `permission denied` no `mvnw` | Execute `chmod +x mvnw` dentro de `cep-clima/backend` |
+
+Cada um desses erros está detalhado, com sintoma completo, causa e passo a passo, em **[docs/problemas-conhecidos.md](docs/problemas-conhecidos.md)**. O documento também guarda o histórico dos defeitos que já foram corrigidos no projeto.
+
+Resolveu algo que não está lá? Registre no catálogo, assim a próxima pessoa não perde o mesmo tempo.
 
 ---
 
